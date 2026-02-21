@@ -9,118 +9,200 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f0f2f5;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf0 100%);
             min-height: 100vh;
         }
 
         header {
-            background: #2c3e50;
+            background: #1a1a2e;
             color: white;
-            padding: 16px 20px;
+            padding: 20px;
             text-align: center;
+            position: relative;
         }
 
-        header h1 { font-size: 22px; font-weight: 600; }
-        header p { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+        header h1 { font-size: 24px; font-weight: 700; letter-spacing: 1px; }
+        header p { font-size: 12px; opacity: 0.6; margin-top: 5px; }
+
+        .admin-btn {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px 10px;
+        }
 
         .container {
-            max-width: 640px;
+            max-width: 700px;
             margin: 0 auto;
-            padding: 16px;
+            padding: 20px 16px;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
             gap: 12px;
         }
 
         .member-card {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
+            padding: 20px 16px;
             text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             cursor: pointer;
-            border: 2px solid transparent;
-            transition: transform 0.1s;
+            border: 3px solid transparent;
+            transition: opacity 0.15s;
         }
 
-        .member-card:active { transform: scale(0.96); }
+        .member-card:hover { opacity: 0.85; }
+        .member-card:active { opacity: 0.7; }
 
-        .member-name { font-size: 18px; font-weight: 600; color: #2c3e50; margin-bottom: 8px; }
+        .member-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 12px;
+        }
 
         .status-badge {
             display: inline-block;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 500;
+            padding: 8px 16px;
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
         }
 
-        .status-在社    .status-badge { background: #d4edda; color: #155724; }
-        .status-外出中  .status-badge { background: #fff3cd; color: #856404; }
-        .status-休憩中  .status-badge { background: #cce5ff; color: #004085; }
-        .status-休み    .status-badge { background: #f8d7da; color: #721c24; }
+        .updated-time { font-size: 11px; color: #999; margin-top: 8px; }
 
-        .status-在社   { border-color: #28a745; }
-        .status-外出中 { border-color: #ffc107; }
-        .status-休憩中 { border-color: #17a2b8; }
-        .status-休み   { border-color: #dc3545; }
-
-        .updated-time { font-size: 10px; color: #aaa; margin-top: 6px; }
-
-        /* Modal */
+        /* 共通モーダル */
         .modal-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             z-index: 100;
             align-items: center;
             justify-content: center;
         }
-
         .modal-overlay.active { display: flex; }
 
+        /* ステータス変更モーダル */
         .modal {
             background: white;
-            border-radius: 16px;
-            padding: 24px;
-            width: 290px;
+            padding: 28px;
+            width: 300px;
             text-align: center;
         }
-
-        .modal h2 { font-size: 17px; margin-bottom: 16px; color: #2c3e50; }
-
-        .status-buttons { display: flex; flex-direction: column; gap: 10px; }
-
+        .modal h2 { font-size: 18px; margin-bottom: 18px; color: #1a1a2e; font-weight: 700; }
+        .status-buttons { display: flex; flex-direction: column; gap: 8px; }
         .status-btn {
-            padding: 13px;
+            padding: 14px;
             border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 500;
+            font-size: 16px;
+            font-weight: 700;
             cursor: pointer;
+            color: white;
+            transition: opacity 0.1s;
         }
-
-        .btn-在社   { background: #d4edda; color: #155724; }
-        .btn-外出中 { background: #fff3cd; color: #856404; }
-        .btn-休憩中 { background: #cce5ff; color: #004085; }
-        .btn-休み   { background: #f8d7da; color: #721c24; }
-
+        .status-btn:active { opacity: 0.8; }
         .cancel-btn {
-            margin-top: 12px;
-            padding: 10px;
+            margin-top: 10px;
+            padding: 11px;
             width: 100%;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            border: 2px solid #ddd;
             background: white;
-            color: #666;
+            color: #888;
             font-size: 14px;
             cursor: pointer;
+            font-weight: 600;
         }
+
+        /* 管理モーダル */
+        .admin-modal {
+            background: white;
+            width: 340px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .admin-modal-header {
+            background: #1a1a2e;
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-modal-header h2 { font-size: 16px; font-weight: 700; }
+        .close-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+
+        .admin-section { padding: 16px 20px; border-bottom: 1px solid #eee; }
+        .admin-section h3 { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; }
+
+        .admin-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+
+        .admin-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background: #f8f9fa;
+            font-size: 14px;
+        }
+
+        .admin-list-item .item-info { display: flex; align-items: center; gap: 8px; }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            display: inline-block;
+        }
+
+        .delete-btn {
+            background: #e91e63;
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .add-form { display: flex; gap: 6px; }
+        .add-form input {
+            flex: 1;
+            padding: 8px 10px;
+            border: 2px solid #ddd;
+            font-size: 14px;
+            outline: none;
+        }
+        .add-form input:focus { border-color: #1a1a2e; }
+
+        .add-btn {
+            background: #1a1a2e;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .status-add-form { display: flex; flex-direction: column; gap: 8px; }
+        .status-add-form input, .status-add-form select {
+            padding: 8px 10px;
+            border: 2px solid #ddd;
+            font-size: 14px;
+            outline: none;
+        }
+        .color-row { display: flex; gap: 6px; align-items: center; }
+        .color-row label { font-size: 12px; color: #666; white-space: nowrap; }
+        .color-row input[type="color"] { width: 40px; height: 34px; padding: 2px; border: 2px solid #ddd; cursor: pointer; }
 
         .loading { text-align: center; padding: 40px; color: #aaa; }
     </style>
@@ -130,6 +212,7 @@
 <header>
     <h1>📋 スタッフボード</h1>
     <p id="last-update">読み込み中...</p>
+    <button class="admin-btn" onclick="openAdmin()">⚙️</button>
 </header>
 
 <div class="container">
@@ -138,60 +221,113 @@
     </div>
 </div>
 
-<!-- 状態変更モーダル -->
+<!-- ステータス変更モーダル -->
 <div class="modal-overlay" id="modal">
     <div class="modal">
         <h2 id="modal-name"></h2>
-        <div class="status-buttons">
-            <button class="status-btn btn-在社"   onclick="updateStatus('在社')">🏢 在社</button>
-            <button class="status-btn btn-外出中" onclick="updateStatus('外出中')">🚗 外出中</button>
-            <button class="status-btn btn-休憩中" onclick="updateStatus('休憩中')">☕ 休憩中</button>
-            <button class="status-btn btn-休み"   onclick="updateStatus('休み')">🏠 休み</button>
-        </div>
+        <div class="status-buttons" id="status-buttons"></div>
         <button class="cancel-btn" onclick="closeModal()">キャンセル</button>
+    </div>
+</div>
+
+<!-- 管理モーダル -->
+<div class="modal-overlay" id="admin-modal">
+    <div class="admin-modal">
+        <div class="admin-modal-header">
+            <h2>⚙️ 管理</h2>
+            <button class="close-btn" onclick="closeAdmin()">✕</button>
+        </div>
+
+        <!-- メンバー管理 -->
+        <div class="admin-section">
+            <h3>👥 メンバー管理</h3>
+            <div class="admin-list" id="member-list"></div>
+            <div class="add-form">
+                <input type="text" id="new-member-name" placeholder="名前を入力" maxlength="10">
+                <button class="add-btn" onclick="addMember()">追加</button>
+            </div>
+        </div>
+
+        <!-- ステータス管理 -->
+        <div class="admin-section">
+            <h3>🏷️ ステータス管理</h3>
+            <div class="admin-list" id="status-list"></div>
+            <div class="status-add-form">
+                <input type="text" id="new-status-name" placeholder="ステータス名（例：会議中）" maxlength="10">
+                <input type="text" id="new-status-emoji" placeholder="絵文字（例：📅）" maxlength="2">
+                <div class="color-row">
+                    <label>文字色</label>
+                    <input type="color" id="new-status-color" value="#ffffff">
+                    <label>背景色</label>
+                    <input type="color" id="new-status-bgcolor" value="#e3f2fd">
+                    <label>枠色</label>
+                    <input type="color" id="new-status-bordercolor" value="#2196f3">
+                </div>
+                <button class="add-btn" onclick="addStatus()">ステータスを追加</button>
+            </div>
+        </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
     const SUPABASE_URL = 'https://wkramctyxgdjpqueuyfp.supabase.co';
-    const SUPABASE_KEY = 'REDACTED_SUPABASE_KEY'; // ここにAPIキーを貼り付け
+    const SUPABASE_KEY = 'REDACTED_SUPABASE_KEY';
 
     const { createClient } = supabase;
     const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
     let selectedMemberId = null;
     let members = [];
+    let statuses = [];
 
+    // 動的CSSを生成
+    function applyStatusStyles() {
+        const existing = document.getElementById('dynamic-styles');
+        if (existing) existing.remove();
+
+        const style = document.createElement('style');
+        style.id = 'dynamic-styles';
+        style.textContent = statuses.map(s => `
+            .status-card-${CSS.escape(s.name)} { background: ${s.bg_color}; border-color: ${s.color}; }
+            .status-badge-${CSS.escape(s.name)} { background: ${s.color}; }
+        `).join('');
+        document.head.appendChild(style);
+    }
+
+    // メンバー読み込み
     async function loadMembers() {
-        const { data, error } = await client
-            .from('members')
-            .select('*')
-            .order('id');
-
+        const { data, error } = await client.from('members').select('*').order('id');
         if (error) { console.error(error); return; }
-
         members = data;
         renderMembers();
-
         const now = new Date();
         document.getElementById('last-update').textContent =
             `最終更新: ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
     }
 
-    function renderMembers() {
-        const grid = document.getElementById('members-grid');
-        grid.innerHTML = members.map(m => `
-            <div class="member-card status-${m.status}" onclick="openModal(${m.id}, '${m.name}')">
-                <div class="member-name">${m.name}</div>
-                <span class="status-badge">${emoji(m.status)} ${m.status}</span>
-                <div class="updated-time">${formatTime(m.updated_at)}</div>
-            </div>
-        `).join('');
+    // ステータス読み込み
+    async function loadStatuses() {
+        const { data, error } = await client.from('statuses').select('*').order('id');
+        if (error) { console.error(error); return; }
+        statuses = data;
+        applyStatusStyles();
     }
 
-    function emoji(status) {
-        return { '在社':'🏢', '外出中':'🚗', '休憩中':'☕', '休み':'🏠' }[status] || '';
+    // メンバー描画
+    function renderMembers() {
+        const grid = document.getElementById('members-grid');
+        grid.innerHTML = members.map(m => {
+            const s = statuses.find(s => s.name === m.status) || statuses[0];
+            const emoji = s ? s.emoji : '';
+            return `
+                <div class="member-card status-card-${m.status}" onclick="openModal(${m.id}, '${m.name}')">
+                    <div class="member-name">${m.name}</div>
+                    <span class="status-badge status-badge-${m.status}">${emoji} ${m.status}</span>
+                    <div class="updated-time">${formatTime(m.updated_at)}</div>
+                </div>
+            `;
+        }).join('');
     }
 
     function formatTime(ts) {
@@ -200,9 +336,16 @@
         return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')} 更新`;
     }
 
+    // ステータス変更モーダル
     function openModal(id, name) {
         selectedMemberId = id;
         document.getElementById('modal-name').textContent = `${name} の状態を変更`;
+        const btns = document.getElementById('status-buttons');
+        btns.innerHTML = statuses.map(s => `
+            <button class="status-btn" style="background:${s.color}" onclick="updateStatus('${s.name}')">
+                ${s.emoji} ${s.name}
+            </button>
+        `).join('');
         document.getElementById('modal').classList.add('active');
     }
 
@@ -213,28 +356,110 @@
 
     async function updateStatus(status) {
         if (!selectedMemberId) return;
-        const { error } = await client
-            .from('members')
+        const { error } = await client.from('members')
             .update({ status, updated_at: new Date().toISOString() })
             .eq('id', selectedMemberId);
-
         if (error) { alert('更新に失敗しました'); return; }
         closeModal();
         await loadMembers();
     }
 
+    // 管理モーダル
+    function openAdmin() {
+        renderAdminLists();
+        document.getElementById('admin-modal').classList.add('active');
+    }
+
+    function closeAdmin() {
+        document.getElementById('admin-modal').classList.remove('active');
+    }
+
+    function renderAdminLists() {
+        // メンバー一覧
+        document.getElementById('member-list').innerHTML = members.map(m => `
+            <div class="admin-list-item">
+                <span>${m.name}</span>
+                <button class="delete-btn" onclick="deleteMember(${m.id}, '${m.name}')">削除</button>
+            </div>
+        `).join('');
+
+        // ステータス一覧
+        document.getElementById('status-list').innerHTML = statuses.map(s => `
+            <div class="admin-list-item">
+                <div class="item-info">
+                    <span class="status-dot" style="background:${s.color}"></span>
+                    <span>${s.emoji} ${s.name}</span>
+                </div>
+                <button class="delete-btn" onclick="deleteStatus(${s.id}, '${s.name}')">削除</button>
+            </div>
+        `).join('');
+    }
+
+    // メンバー追加
+    async function addMember() {
+        const name = document.getElementById('new-member-name').value.trim();
+        if (!name) { alert('名前を入力してください'); return; }
+        const { error } = await client.from('members').insert({ name, status: statuses[0]?.name || '在社' });
+        if (error) { alert('追加に失敗しました'); return; }
+        document.getElementById('new-member-name').value = '';
+        await loadMembers();
+        renderAdminLists();
+    }
+
+    // メンバー削除
+    async function deleteMember(id, name) {
+        if (!confirm(`「${name}」を削除しますか？`)) return;
+        const { error } = await client.from('members').delete().eq('id', id);
+        if (error) { alert('削除に失敗しました'); return; }
+        await loadMembers();
+        renderAdminLists();
+    }
+
+    // ステータス追加
+    async function addStatus() {
+        const name = document.getElementById('new-status-name').value.trim();
+        const emoji = document.getElementById('new-status-emoji').value.trim();
+        const color = document.getElementById('new-status-color').value;
+        const bg_color = document.getElementById('new-status-bgcolor').value;
+        if (!name) { alert('ステータス名を入力してください'); return; }
+        const { error } = await client.from('statuses').insert({ name, color, bg_color, emoji });
+        if (error) { alert('追加に失敗しました'); return; }
+        document.getElementById('new-status-name').value = '';
+        document.getElementById('new-status-emoji').value = '';
+        await loadStatuses();
+        renderAdminLists();
+    }
+
+    // ステータス削除
+    async function deleteStatus(id, name) {
+        if (!confirm(`「${name}」を削除しますか？`)) return;
+        const { error } = await client.from('statuses').delete().eq('id', id);
+        if (error) { alert('削除に失敗しました'); return; }
+        await loadStatuses();
+        renderAdminLists();
+    }
+
     // リアルタイム更新
-    client.channel('members-changes')
+    client.channel('changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'members' }, loadMembers)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'statuses' }, async () => {
+            await loadStatuses();
+            renderMembers();
+        })
         .subscribe();
 
     // モーダル外クリックで閉じる
-    document.getElementById('modal').addEventListener('click', function(e) {
-        if (e.target === this) closeModal();
-    });
+    document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+    document.getElementById('admin-modal').addEventListener('click', function(e) { if (e.target === this) closeAdmin(); });
 
-    loadMembers();
-    setInterval(loadMembers, 30000); // 30秒ごとに自動更新
+    // 初期化
+    async function init() {
+        await loadStatuses();
+        await loadMembers();
+    }
+
+    init();
+    setInterval(loadMembers, 30000);
 </script>
 </body>
 </html>
