@@ -303,7 +303,7 @@
         renderMembers();
         const now = new Date();
         document.getElementById('last-update').textContent =
-            `最終更新: ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+            `最終更新: ${now.toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit' })}`;
     }
 
     // ステータス読み込み
@@ -332,8 +332,9 @@
 
     function formatTime(ts) {
         if (!ts) return '';
-        const d = new Date(ts);
-        return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')} 更新`;
+        const utcTs = ts.endsWith('Z') ? ts : ts + 'Z';
+        const d = new Date(utcTs);
+        return d.toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit' }) + ' 更新';
     }
 
     // ステータス変更モーダル
