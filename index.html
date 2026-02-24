@@ -8,74 +8,129 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf0 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+            background: #F9F9F7;
             min-height: 100vh;
+            color: #333;
         }
 
         header {
-            background: #1a1a2e;
-            color: white;
-            padding: 20px;
+            background: #FFFFFF;
+            padding: 20px 24px;
             text-align: center;
             position: relative;
+            border-bottom: 1px solid #eee;
         }
 
-        header h1 { font-size: 24px; font-weight: 700; letter-spacing: 1px; }
-        header p { font-size: 12px; opacity: 0.6; margin-top: 5px; }
+        header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+            letter-spacing: 0.5px;
+        }
+
+        header p {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
 
         .admin-btn {
             position: absolute;
             right: 16px;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(255,255,255,0.15);
-            border: none;
-            color: white;
-            font-size: 20px;
+            background: #F9F9F7;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            color: #888;
+            font-size: 18px;
             cursor: pointer;
-            padding: 8px 10px;
+            padding: 6px 10px;
+            transition: background 0.15s;
         }
 
+        .admin-btn:hover { background: #eee; }
+
         .container {
-            max-width: 700px;
+            max-width: 720px;
             margin: 0 auto;
             padding: 20px 16px;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 12px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+
+        @media (max-width: 640px) {
+            .grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 400px) {
+            .grid { grid-template-columns: 1fr; }
         }
 
         .member-card {
-            padding: 20px 16px;
+            background: #FFFFFF;
+            border-radius: 8px;
+            padding: 0;
             text-align: center;
             cursor: pointer;
-            border: 3px solid transparent;
-            transition: opacity 0.15s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.15s, box-shadow 0.15s;
+            overflow: hidden;
+            position: relative;
         }
 
-        .member-card:hover { opacity: 0.85; }
-        .member-card:active { opacity: 0.7; }
+        .member-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+        }
+
+        .member-card:active { transform: scale(0.98); }
+
+        .status-bar {
+            height: 6px;
+            width: 100%;
+        }
+
+        .card-content {
+            padding: 18px 12px 14px;
+        }
 
         .member-name {
-            font-size: 22px;
+            font-size: 1.5rem;
             font-weight: 700;
-            color: #1a1a2e;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .member-name-en {
+            font-size: 0.7rem;
+            color: #aaa;
+            font-weight: 400;
+            letter-spacing: 0.5px;
             margin-bottom: 12px;
         }
 
         .status-badge {
             display: inline-block;
-            padding: 8px 16px;
-            font-size: 20px;
-            font-weight: 700;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
             color: white;
         }
 
-        .updated-time { font-size: 11px; color: #999; margin-top: 8px; }
+        .updated-time {
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 10px;
+            text-align: right;
+            padding-right: 4px;
+        }
 
         /* 共通モーダル */
         .modal-overlay {
@@ -83,66 +138,101 @@
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
             z-index: 100;
             align-items: center;
             justify-content: center;
         }
+
         .modal-overlay.active { display: flex; }
 
         /* ステータス変更モーダル */
         .modal {
-            background: white;
-            padding: 28px;
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 28px 24px;
             width: 300px;
             text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
         }
-        .modal h2 { font-size: 18px; margin-bottom: 18px; color: #1a1a2e; font-weight: 700; }
-        .status-buttons { display: flex; flex-direction: column; gap: 8px; }
+
+        .modal h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #333;
+            font-weight: 700;
+        }
+
+        .status-buttons { display: flex; flex-direction: column; gap: 10px; }
+
         .status-btn {
-            padding: 14px;
+            height: 56px;
             border: none;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
             color: white;
-            transition: opacity 0.1s;
+            transition: transform 0.1s, filter 0.1s;
         }
-        .status-btn:active { opacity: 0.8; }
+
+        .status-btn:hover { filter: brightness(0.95); }
+        .status-btn:active { transform: scale(0.97); }
+
         .cancel-btn {
             margin-top: 10px;
-            padding: 11px;
+            padding: 12px;
             width: 100%;
-            border: 2px solid #ddd;
-            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #FFFFFF;
             color: #888;
             font-size: 14px;
             cursor: pointer;
             font-weight: 600;
+            transition: background 0.1s;
         }
+
+        .cancel-btn:hover { background: #f5f5f5; }
 
         /* 管理モーダル */
         .admin-modal {
-            background: white;
-            width: 340px;
+            background: #FFFFFF;
+            border-radius: 12px;
+            width: 360px;
             max-height: 85vh;
             overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
         }
 
         .admin-modal-header {
-            background: #1a1a2e;
+            background: #333;
             color: white;
             padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-radius: 12px 12px 0 0;
         }
 
-        .admin-modal-header h2 { font-size: 16px; font-weight: 700; }
-        .close-btn { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+        .admin-modal-header h2 { font-size: 15px; font-weight: 700; }
 
-        .admin-section { padding: 16px 20px; border-bottom: 1px solid #eee; }
-        .admin-section h3 { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; }
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.1s;
+        }
+
+        .close-btn:hover { opacity: 1; }
+
+        .admin-section { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; }
+        .admin-section h3 { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 12px; }
 
         .admin-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
 
@@ -150,67 +240,81 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 10px;
-            background: #f8f9fa;
-            font-size: 14px;
+            padding: 8px 12px;
+            background: #F9F9F7;
+            border-radius: 6px;
+            font-size: 13px;
         }
 
         .admin-list-item .item-info { display: flex; align-items: center; gap: 8px; }
 
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            display: inline-block;
-        }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 
         .delete-btn {
-            background: #e91e63;
-            color: white;
-            border: none;
-            padding: 4px 10px;
-            font-size: 12px;
+            background: none;
+            color: #E91E63;
+            border: 1px solid #E91E63;
+            border-radius: 4px;
+            padding: 3px 8px;
+            font-size: 11px;
             cursor: pointer;
             font-weight: 600;
+            transition: background 0.1s, color 0.1s;
         }
 
+        .delete-btn:hover { background: #E91E63; color: white; }
+
         .add-form { display: flex; gap: 6px; }
+
         .add-form input {
             flex: 1;
             padding: 8px 10px;
-            border: 2px solid #ddd;
-            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
             outline: none;
+            transition: border-color 0.1s;
         }
-        .add-form input:focus { border-color: #1a1a2e; }
+
+        .add-form input:focus { border-color: #333; }
 
         .add-btn {
-            background: #1a1a2e;
+            background: #333;
             color: white;
             border: none;
+            border-radius: 6px;
             padding: 8px 14px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
+            transition: background 0.1s;
         }
+
+        .add-btn:hover { background: #555; }
 
         .status-add-form { display: flex; flex-direction: column; gap: 8px; }
-        .status-add-form input, .status-add-form select {
+
+        .status-add-form input {
             padding: 8px 10px;
-            border: 2px solid #ddd;
-            font-size: 14px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
             outline: none;
         }
-        .color-row { display: flex; gap: 6px; align-items: center; }
-        .color-row label { font-size: 12px; color: #666; white-space: nowrap; }
-        .color-row input[type="color"] { width: 40px; height: 34px; padding: 2px; border: 2px solid #ddd; cursor: pointer; }
 
-        .loading { text-align: center; padding: 40px; color: #aaa; }
+        .status-add-form input:focus { border-color: #333; }
+
+        .color-row { display: flex; gap: 6px; align-items: center; }
+        .color-row label { font-size: 11px; color: #888; white-space: nowrap; }
+        .color-row input[type="color"] { width: 36px; height: 30px; padding: 2px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+
+        .loading { text-align: center; padding: 40px; color: #aaa; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>📋 スタッフボード</h1>
+    <h1>スタッフボード</h1>
     <p id="last-update">読み込み中...</p>
     <button class="admin-btn" onclick="openAdmin()">⚙️</button>
 </header>
@@ -237,8 +341,6 @@
             <h2>⚙️ 管理</h2>
             <button class="close-btn" onclick="closeAdmin()">✕</button>
         </div>
-
-        <!-- メンバー管理 -->
         <div class="admin-section">
             <h3>👥 メンバー管理</h3>
             <div class="admin-list" id="member-list"></div>
@@ -247,8 +349,6 @@
                 <button class="add-btn" onclick="addMember()">追加</button>
             </div>
         </div>
-
-        <!-- ステータス管理 -->
         <div class="admin-section">
             <h3>🏷️ ステータス管理</h3>
             <div class="admin-list" id="status-list"></div>
@@ -256,12 +356,10 @@
                 <input type="text" id="new-status-name" placeholder="ステータス名（例：会議中）" maxlength="10">
                 <input type="text" id="new-status-emoji" placeholder="絵文字（例：📅）" maxlength="2">
                 <div class="color-row">
-                    <label>文字色</label>
-                    <input type="color" id="new-status-color" value="#ffffff">
+                    <label>バッジ色</label>
+                    <input type="color" id="new-status-color" value="#2196f3">
                     <label>背景色</label>
                     <input type="color" id="new-status-bgcolor" value="#e3f2fd">
-                    <label>枠色</label>
-                    <input type="color" id="new-status-bordercolor" value="#2196f3">
                 </div>
                 <button class="add-btn" onclick="addStatus()">ステータスを追加</button>
             </div>
@@ -281,21 +379,27 @@
     let members = [];
     let statuses = [];
 
+    // ローマ字変換テーブル
+    const romajiMap = {
+        '山口':'Yamaguchi','武藤':'Muto','大場':'Oba','相羽':'Aiba',
+        '岡村':'Okamura','太田':'Ota','五藤':'Goto','加藤':'Kato','今井':'Imai'
+    };
+
+    function toRomaji(name) { return romajiMap[name] || ''; }
+
     // 動的CSSを生成
     function applyStatusStyles() {
         const existing = document.getElementById('dynamic-styles');
         if (existing) existing.remove();
-
         const style = document.createElement('style');
         style.id = 'dynamic-styles';
         style.textContent = statuses.map(s => `
-            .status-card-${CSS.escape(s.name)} { background: ${s.bg_color}; border-color: ${s.color}; }
-            .status-badge-${CSS.escape(s.name)} { background: ${s.color}; }
+            .bar-${CSS.escape(s.name)} { background: ${s.color}; }
+            .badge-${CSS.escape(s.name)} { background: ${s.color}; }
         `).join('');
         document.head.appendChild(style);
     }
 
-    // メンバー読み込み
     async function loadMembers() {
         const { data, error } = await client.from('members').select('*').order('id');
         if (error) { console.error(error); return; }
@@ -306,7 +410,6 @@
             `最終更新: ${now.toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit' })}`;
     }
 
-    // ステータス読み込み
     async function loadStatuses() {
         const { data, error } = await client.from('statuses').select('*').order('id');
         if (error) { console.error(error); return; }
@@ -314,17 +417,21 @@
         applyStatusStyles();
     }
 
-    // メンバー描画
     function renderMembers() {
         const grid = document.getElementById('members-grid');
         grid.innerHTML = members.map(m => {
             const s = statuses.find(s => s.name === m.status) || statuses[0];
             const emoji = s ? s.emoji : '';
+            const romaji = toRomaji(m.name);
             return `
-                <div class="member-card status-card-${m.status}" onclick="openModal(${m.id}, '${m.name}')">
-                    <div class="member-name">${m.name}</div>
-                    <span class="status-badge status-badge-${m.status}">${emoji} ${m.status}</span>
-                    <div class="updated-time">${formatTime(m.updated_at)}</div>
+                <div class="member-card" onclick="openModal(${m.id}, '${m.name}')">
+                    <div class="status-bar bar-${m.status}"></div>
+                    <div class="card-content">
+                        <div class="member-name">${m.name}</div>
+                        ${romaji ? `<div class="member-name-en">${romaji}</div>` : '<div class="member-name-en">&nbsp;</div>'}
+                        <span class="status-badge badge-${m.status}">${emoji} ${m.status}</span>
+                        <div class="updated-time">${formatTime(m.updated_at)}</div>
+                    </div>
                 </div>
             `;
         }).join('');
@@ -337,7 +444,6 @@
         return d.toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit' }) + ' 更新';
     }
 
-    // ステータス変更モーダル
     function openModal(id, name) {
         selectedMemberId = id;
         document.getElementById('modal-name').textContent = `${name} の状態を変更`;
@@ -365,7 +471,6 @@
         await loadMembers();
     }
 
-    // 管理モーダル
     function openAdmin() {
         renderAdminLists();
         document.getElementById('admin-modal').classList.add('active');
@@ -376,7 +481,6 @@
     }
 
     function renderAdminLists() {
-        // メンバー一覧
         document.getElementById('member-list').innerHTML = members.map(m => `
             <div class="admin-list-item">
                 <span>${m.name}</span>
@@ -384,7 +488,6 @@
             </div>
         `).join('');
 
-        // ステータス一覧
         document.getElementById('status-list').innerHTML = statuses.map(s => `
             <div class="admin-list-item">
                 <div class="item-info">
@@ -396,7 +499,6 @@
         `).join('');
     }
 
-    // メンバー追加
     async function addMember() {
         const name = document.getElementById('new-member-name').value.trim();
         if (!name) { alert('名前を入力してください'); return; }
@@ -407,7 +509,6 @@
         renderAdminLists();
     }
 
-    // メンバー削除
     async function deleteMember(id, name) {
         if (!confirm(`「${name}」を削除しますか？`)) return;
         const { error } = await client.from('members').delete().eq('id', id);
@@ -416,7 +517,6 @@
         renderAdminLists();
     }
 
-    // ステータス追加
     async function addStatus() {
         const name = document.getElementById('new-status-name').value.trim();
         const emoji = document.getElementById('new-status-emoji').value.trim();
@@ -431,7 +531,6 @@
         renderAdminLists();
     }
 
-    // ステータス削除
     async function deleteStatus(id, name) {
         if (!confirm(`「${name}」を削除しますか？`)) return;
         const { error } = await client.from('statuses').delete().eq('id', id);
@@ -440,7 +539,6 @@
         renderAdminLists();
     }
 
-    // リアルタイム更新
     client.channel('changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'members' }, loadMembers)
         .on('postgres_changes', { event: '*', schema: 'public', table: 'statuses' }, async () => {
@@ -449,11 +547,9 @@
         })
         .subscribe();
 
-    // モーダル外クリックで閉じる
     document.getElementById('modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
     document.getElementById('admin-modal').addEventListener('click', function(e) { if (e.target === this) closeAdmin(); });
 
-    // 初期化
     async function init() {
         await loadStatuses();
         await loadMembers();
