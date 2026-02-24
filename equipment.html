@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>機材予約管理</title>
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --eq-w: 148px;
+            --hr-w: 66px;
+            --row-h: 60px;
+            --hd-h: 52px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #ebedf0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+        /* ===== HEADER ===== */
+        header {
+            background: var(--primary);
+            color: white;
+            height: var(--hd-h);
+            padding: 0 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 8px;
+        }
+        header h1 { font-size: 17px; font-weight: 700; white-space: nowrap; }
+        .date-nav { display: flex; align-items: center; gap: 4px; }
+        .dn-btn {
+            background: rgba(255,255,255,0.2);
+            border: none; color: white;
+            font-size: 20px; padding: 2px 11px 4px;
+            border-radius: 4px; cursor: pointer; line-height: 1;
+        }
+        #dn-date { font-size: 13px; font-weight: 700; min-width: 120px; text-align: center; }
+        .today-btn {
+            font-size: 11px; background: rgba(255,255,255,0.25);
+            border: none; color: white; padding: 3px 9px;
+            border-radius: 10px; cursor: pointer; font-weight: 700; white-space: nowrap;
+        }
+        .hdr-btn {
+            background: rgba(255,255,255,0.15); border: none;
+            color: white; font-size: 18px; padding: 5px 10px;
+            border-radius: 4px; cursor: pointer; white-space: nowrap;
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .main-layout { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+
+        /* ===== GANTT ===== */
+        .gantt-wrap {
+            overflow: auto;
+            flex: 1;
+            min-width: 0;
+            min-height: 0;
+        }
+        .gantt-inner { position: relative; display: inline-block; min-width: 100%; }
+
+        /* Time header */
+        .gantt-hd {
+            display: flex;
+            position: sticky; top: 0; z-index: 50;
+            background: #d6d9df;
+            border-bottom: 2px solid #b0b5bf;
+            height: 30px;
+        }
+        .gantt-hd-eq {
+            width: var(--eq-w); flex: none;
+            position: sticky; left: 0; z-index: 60;
+            background: #d6d9df;
+            border-right: 2px solid #b0b5bf;
+            display: flex; align-items: center;
+            padding: 0 10px;
+            font-size: 11px; font-weight: 700; color: #777; letter-spacing: 0.5px;
+        }
+        .gantt-hd-times { display: flex; }
+        .hour-mark {
+            width: var(--hr-w); flex: none;
+            border-right: 1px solid #c0c4cc;
+            display: flex; align-items: center;
+            padding-left: 5px;
+            font-size: 11px; color: #777; font-weight: 600;
+        }
+
+        /* Equipment rows */
+        .gantt-rows { position: relative; }
+        .gantt-row {
+            display: flex;
+            height: var(--row-h);
+            border-bottom: 1px solid #d8dbe0;
+            background: white;
+        }
+        .gantt-row:hover { background: #fafbfc; }
+
+        .eq-lbl {
+            width: var(--eq-w); flex: none;
+            position: sticky; left: 0; z-index: 30;
+            background: inherit;
+            border-right: 2px solid #d8dbe0;
+            padding: 0 8px;
+            display: flex; align-items: center; gap: 5px;
+        }
+        .eq-emoji { font-size: 18px; flex: none; }
+        .eq-info { min-width: 0; flex: 1; }
+        .eq-name { font-size: 12px; font-weight: 700; color: var(--primary); line-height: 1.3; }
+        .eq-cat  { font-size: 10px; color: #bbb; }
+        .allday-btn {
+            display: block;
+            margin-top: 3px;
+            font-size: 10px; font-weight: 700;
+            background: #e8eaf6; color: #3949ab;
+            border: 1px solid #c5cae9; border-radius: 3px;
+            padding: 1px 5px; cursor: pointer; white-space: nowrap;
+            line-height: 1.6; transition: background 0.15s, color 0.15s;
+        }
+        .allday-btn:hover { background: #c5cae9; }
+        .allday-btn.allday-full { background: #3949ab; color: white; border-color: #3949ab; }
+        .allday-btn.allday-full:hover { background: #283593; border-color: #283593; }
+
+        .time-area {
+            position: relative;
+            cursor: crosshair;
+            background-image: repeating-linear-gradient(
+                90deg, #e0e2e6 0, #e0e2e6 1px, transparent 1px, transparent var(--hr-w)
+            );
+            background-size: var(--hr-w) 100%;
+        }
+
+        /* Reservation block */
+        .res-block {
+            position: absolute;
+            top: 8px; bottom: 8px;
+            border-radius: 5px;
+            color: white;
+            font-size: 11px; font-weight: 700;
+            display: flex; align-items: center;
+            padding: 0 6px; gap: 4px;
+            overflow: hidden; white-space: nowrap;
+            cursor: grab; z-index: 10;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+            transition: filter 0.1s, opacity 0.1s;
+            user-select: none;
+        }
+        .res-block:hover { filter: brightness(1.12); }
+        .res-block.is-moving, .res-block.is-resizing {
+            opacity: 0.72;
+            cursor: grabbing;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+            z-index: 25;
+            outline: 2px dashed rgba(255,255,255,0.8);
+        }
+        .rb-name { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+        .rb-time { font-size: 10px; opacity: 0.88; flex: none; }
+
+        /* リサイズハンドル */
+        .res-handle-l, .res-handle-r {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 8px;
+            cursor: ew-resize;
+            z-index: 12;
+            flex: none;
+        }
+        .res-handle-l { left: 0; border-radius: 5px 0 0 5px; }
+        .res-handle-r { right: 0; border-radius: 0 5px 5px 0; }
+        .res-handle-l:hover, .res-handle-r:hover { background: rgba(255,255,255,0.35); }
+
+        /* ドラッグ選択プレビュー */
+        .drag-preview {
+            position: absolute;
+            top: 6px; bottom: 6px;
+            background: rgba(26,26,46,0.18);
+            border: 2px dashed #1a1a2e;
+            border-radius: 5px;
+            pointer-events: none;
+            z-index: 15;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; color: #1a1a2e;
+            white-space: nowrap;
+            overflow: hidden;
+            padding: 0 6px;
+        }
+
+        /* Now line */
+        .now-line {
+            position: absolute; top: 0; bottom: 0; width: 2px;
+            background: #e53935; z-index: 20; pointer-events: none;
+        }
+        .now-line::before {
+            content: ''; position: absolute; top: 0; left: -4px;
+            width: 10px; height: 10px;
+            background: #e53935; border-radius: 50%;
+        }
+
+        /* Empty / loading */
+        .gantt-placeholder {
+            padding: 60px 20px; text-align: center;
+            color: #aaa; font-size: 14px; line-height: 2;
+        }
+
+        /* ===== MODALS ===== */
+        .overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 200; align-items: center; justify-content: center; padding: 12px;
+        }
+        .overlay.active { display: flex; }
+        .modal {
+            background: white; width: 100%; max-width: 360px;
+            border-radius: 10px; overflow: hidden;
+        }
+        .modal.scrollable { max-height: 88vh; overflow-y: auto; max-width: 520px; }
+        .modal-hd {
+            background: var(--primary); color: white;
+            padding: 13px 16px; display: flex;
+            justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 5;
+        }
+        .modal-hd h2 { font-size: 15px; font-weight: 700; }
+        .x-btn { background: none; border: none; color: white; font-size: 22px; cursor: pointer; }
+        .modal-body { padding: 16px; }
+
+        .form-row { margin-bottom: 11px; }
+        .form-row label { display: block; font-size: 12px; font-weight: 600; color: #666; margin-bottom: 4px; }
+        .form-row input, .form-row select {
+            width: 100%; padding: 9px 11px;
+            border: 2px solid #e0e0e0; border-radius: 5px;
+            font-size: 14px; outline: none; font-family: inherit; background: white;
+        }
+        .form-row input:focus, .form-row select:focus { border-color: var(--primary); }
+        .time-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+        .conflict-warn {
+            display: none; background: #fff3f3;
+            border: 1.5px solid #e53935; color: #c62828;
+            padding: 8px 12px; border-radius: 5px;
+            font-size: 12px; line-height: 1.5; margin-top: 8px;
+        }
+
+        .modal-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+        .btn-primary { padding: 12px; background: var(--primary); color: white; border: none; border-radius: 5px; font-size: 14px; font-weight: 700; cursor: pointer; }
+        .btn-danger  { padding: 12px; background: #e53935; color: white; border: none; border-radius: 5px; font-size: 14px; font-weight: 700; cursor: pointer; }
+        .btn-cancel  { padding: 11px; background: white; color: #888; border: 2px solid #e0e0e0; border-radius: 5px; font-size: 14px; cursor: pointer; }
+
+        /* View modal */
+        .view-detail {
+            background: #f8f9fa; border-radius: 7px;
+            padding: 14px; margin-bottom: 14px;
+        }
+        .vd-user { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .vd-dot  { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+        .vd-name { font-size: 20px; font-weight: 700; color: var(--primary); }
+        .vd-time { font-size: 14px; color: #555; }
+        .vd-purpose { font-size: 13px; color: #888; margin-top: 6px; font-style: italic; }
+
+        /* Admin modal */
+        .admin-sec { padding: 14px 16px; border-bottom: 1px solid #eee; }
+        .admin-sec h3 { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 10px; }
+        .item-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+        .item-row {
+            display: flex; align-items: center; gap: 8px;
+            padding: 7px 10px; background: #f8f9fa; border-radius: 5px;
+        }
+        .clr-dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+        .item-txt { flex: 1; font-size: 13px; font-weight: 600; }
+        .item-sub { font-size: 11px; color: #bbb; }
+        .del-btn  { background: #e53935; color: white; border: none; padding: 3px 10px; font-size: 11px; font-weight: 700; cursor: pointer; border-radius: 3px; }
+        .edit-btn { background: #546e7a; color: white; border: none; padding: 3px 9px; font-size: 11px; font-weight: 700; cursor: pointer; border-radius: 3px; }
+
+        /* 並び替えドラッグハンドル */
+        .drag-grip { color: #ccc; font-size: 15px; cursor: grab; padding: 0 4px; flex: none; user-select: none; }
+        .drag-grip:active { cursor: grabbing; }
+        .item-row[draggable="true"] { transition: opacity 0.1s; }
+        .item-row.dragging-eq  { opacity: 0.35; }
+        .item-row.drop-above   { border-top: 2px solid #4c6ef5; }
+        .item-row.drop-below   { border-bottom: 2px solid #4c6ef5; }
+
+        /* インライン編集フォーム */
+        .item-row.editing { background: #eef2ff; flex-wrap: wrap; gap: 6px; }
+        .edit-inputs { display: flex; gap: 5px; flex: 1; min-width: 0; }
+        .edit-inputs input { padding: 5px 7px; border: 1.5px solid #c5cae9; border-radius: 4px; font-size: 13px; outline: none; font-family: inherit; background: white; }
+        .edit-inputs input:focus { border-color: var(--primary); }
+        .ei-emoji { width: 50px; text-align: center; }
+        .ei-name  { flex: 2; }
+        .ei-cat   { flex: 2; }
+        .save-btn   { background: #43a047; color: white; border: none; padding: 4px 11px; font-size: 11px; font-weight: 700; cursor: pointer; border-radius: 3px; }
+        .ccl-btn    { background: #9e9e9e; color: white; border: none; padding: 4px 8px;  font-size: 11px; cursor: pointer; border-radius: 3px; }
+
+        .add-form { display: flex; flex-direction: column; gap: 7px; }
+        .add-form input { padding: 8px 10px; border: 2px solid #ddd; border-radius: 5px; font-size: 13px; outline: none; font-family: inherit; }
+        .add-form input:focus { border-color: var(--primary); }
+        .r2 { display: flex; gap: 6px; align-items: center; }
+        .r2 input { flex: 1; }
+        .ei { width: 56px !important; flex: none !important; text-align: center; }
+        .ci { width: 44px; height: 34px; padding: 2px; border: 2px solid #ddd; border-radius: 4px; cursor: pointer; flex: none; }
+        .add-btn { width: 100%; padding: 9px; background: var(--primary); color: white; border: none; border-radius: 5px; font-size: 13px; font-weight: 700; cursor: pointer; }
+        .empty-msg { color: #bbb; font-size: 12px; text-align: center; padding: 8px; }
+
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 108px; flex-shrink: 0;
+            background: #f4f5f7;
+            border-left: 1px solid #d8dbe0;
+            overflow-y: auto;
+            padding: 8px 6px;
+        }
+        .sb-title {
+            font-size: 9px; font-weight: 700; color: #aaa;
+            letter-spacing: 0.8px; text-transform: uppercase;
+            margin-bottom: 8px; text-align: center;
+        }
+        .usr-card {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 8px 4px 7px; border-radius: 7px;
+            background: white; margin-bottom: 7px;
+            cursor: grab; user-select: none;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            border: 1px solid #e4e6ea;
+            transition: box-shadow 0.12s, transform 0.12s;
+        }
+        .usr-card:hover { box-shadow: 0 3px 10px rgba(0,0,0,0.16); transform: translateY(-1px); }
+        .usr-card:active { cursor: grabbing; }
+        .usr-dot-lg { width: 28px; height: 28px; border-radius: 50%; margin-bottom: 5px; flex-shrink: 0; }
+        .usr-cname { font-size: 10px; font-weight: 700; color: #444; text-align: center; line-height: 1.2; word-break: break-all; }
+        .sb-hint { font-size: 9px; color: #bbb; text-align: center; line-height: 1.5; margin-top: 10px; padding: 0 2px; }
+        /* Row drop highlight (PC drag) */
+        .gantt-row.drag-over { background: #e3f2fd !important; }
+        .gantt-row.drag-over .time-area {
+            background-image: repeating-linear-gradient(90deg, #90caf9 0, #90caf9 1px, transparent 1px, transparent var(--hr-w));
+        }
+        /* Mobile assign mode */
+        .usr-card.selected {
+            border: 2px solid #3949ab;
+            box-shadow: 0 0 0 2px rgba(57,73,171,0.25);
+            background: #e8eaf6;
+        }
+        .assign-banner {
+            position: sticky; top: 0; z-index: 45;
+            background: #3949ab; color: white;
+            padding: 7px 12px; font-size: 12px; font-weight: 600;
+            display: flex; align-items: center; gap: 8px;
+            flex-wrap: wrap;
+        }
+        .assign-banner-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .assign-cancel-btn {
+            margin-left: auto; background: rgba(255,255,255,0.25);
+            border: none; color: white; padding: 2px 10px;
+            border-radius: 10px; cursor: pointer; font-size: 11px; font-weight: 700;
+        }
+        .gantt-rows.assign-mode .gantt-row { cursor: pointer; }
+        .gantt-rows.assign-mode .gantt-row:hover { background: #e8f5e9 !important; }
+        .gantt-rows.assign-mode .eq-lbl { background: linear-gradient(90deg,#e8f5e9,transparent) !important; }
+
+        /* ===== CALENDAR POPUP ===== */
+        .date-nav-wrap { position: relative; }
+        .cal-popup {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.28);
+            padding: 12px;
+            z-index: 300;
+            width: 252px;
+            color: #1a1a2e;
+            user-select: none;
+        }
+        .cal-popup.open { display: block; }
+        .cal-hd {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .cal-nav {
+            background: none; border: none; cursor: pointer;
+            color: #1a1a2e; font-size: 18px;
+            padding: 2px 8px; border-radius: 4px; line-height: 1;
+        }
+        .cal-nav:hover { background: #eee; }
+        .cal-ml { font-size: 13px; font-weight: 700; color: #1a1a2e; }
+        .cal-body {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+        }
+        .cal-dow {
+            font-size: 10px; font-weight: 700; color: #aaa;
+            text-align: center; padding: 3px 0;
+        }
+        .cal-dow.sun-lbl { color: #e57373; }
+        .cal-dow.sat-lbl { color: #64b5f6; }
+        .cal-day {
+            font-size: 12px; text-align: center;
+            padding: 5px 0; border-radius: 4px;
+            cursor: pointer; color: #333;
+        }
+        .cal-day:hover { background: #eef2ff; }
+        .cal-day.other-m { color: #ccc; }
+        .cal-day.other-m:hover { background: #f5f5f5; }
+        .cal-day.is-today { background: #e8eaf6; color: #1a1a2e; font-weight: 700; }
+        .cal-day.is-sel   { background: var(--primary); color: white !important; font-weight: 700; }
+        .cal-day.sat-d    { color: #1565c0; }
+        .cal-day.sun-d    { color: #e53935; }
+
+    @media (max-width: 640px) {
+        :root { --eq-w: 80px; --row-h: 72px; }
+        /* 100dvh = ブラウザUIを除いた実際の表示領域 → 縦スクロール改善 */
+        body { height: 100dvh; padding-bottom: env(safe-area-inset-bottom, 0px); }
+        .eq-cat   { display: none; }
+        /* 絵文字を非表示にして機材名の表示幅を確保 */
+        .eq-emoji { display: none; }
+        .eq-lbl   { padding: 0 4px; }
+        .eq-name  { font-size: 11px; }
+        .allday-btn { font-size: 9px; padding: 1px 3px; margin-top: 2px; }
+        .sidebar { width: 72px; padding: 6px 3px; }
+        .usr-dot-lg { width: 22px; height: 22px; margin-bottom: 3px; }
+        .usr-cname { font-size: 9px; }
+        .sb-hint { font-size: 8px; }
+        .sb-title { font-size: 8px; }
+    }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🎬 機材予約</h1>
+    <div class="date-nav-wrap">
+        <div class="date-nav">
+            <button class="dn-btn" onclick="changeDate(-1)">‹</button>
+            <span id="dn-date" onclick="toggleCalendar()" style="cursor:pointer" title="カレンダーで日付を選択">-</span>
+            <button class="dn-btn" onclick="changeDate(1)">›</button>
+            <button class="today-btn" onclick="goToday()">今日</button>
+            <button class="dn-btn" onclick="toggleCalendar()" title="カレンダー" style="font-size:15px;padding:4px 9px">📅</button>
+        </div>
+        <div id="cal-popup" class="cal-popup">
+            <div class="cal-hd">
+                <button class="cal-nav" onclick="calPrev()">‹</button>
+                <span id="cal-ml"></span>
+                <button class="cal-nav" onclick="calNext()">›</button>
+            </div>
+            <div class="cal-body">
+                <div class="cal-dow sun-lbl">日</div>
+                <div class="cal-dow">月</div>
+                <div class="cal-dow">火</div>
+                <div class="cal-dow">水</div>
+                <div class="cal-dow">木</div>
+                <div class="cal-dow">金</div>
+                <div class="cal-dow sat-lbl">土</div>
+                <div id="cal-days" style="display:contents"></div>
+            </div>
+        </div>
+    </div>
+    <button class="hdr-btn" onclick="openAdmin()">⚙️</button>
+</header>
+
+<div class="main-layout">
+    <div class="gantt-wrap" id="gantt-wrap">
+        <div class="gantt-inner" id="gantt-inner">
+            <div class="gantt-placeholder">読み込み中...</div>
+        </div>
+    </div>
+    <div class="sidebar" id="sidebar">
+        <div class="sb-title">担当者</div>
+        <div class="sb-hint">行にドロップで終日予約</div>
+    </div>
+</div>
+
+<!-- 予約追加モーダル -->
+<div class="overlay" id="add-overlay">
+    <div class="modal">
+        <div class="modal-hd">
+            <h2 id="add-title">予約を追加</h2>
+            <button class="x-btn" onclick="closeAdd()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <label>担当者</label>
+                <select id="add-user" onchange="checkConflict()">
+                    <option value="">-- 選択 --</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label>日付</label>
+                <input type="date" id="add-date" onchange="checkConflict()">
+            </div>
+            <div class="form-row">
+                <label>時間（開始 〜 終了）</label>
+                <div class="time-row">
+                    <input type="time" id="add-start" step="900" onchange="checkConflict()">
+                    <input type="time" id="add-end"   step="900" onchange="checkConflict()">
+                </div>
+            </div>
+            <div class="form-row">
+                <label>用途・メモ（任意）</label>
+                <input type="text" id="add-purpose" placeholder="例：スタジオ撮影、配信、外部貸出">
+            </div>
+            <div class="conflict-warn" id="conflict-warn"></div>
+            <div class="modal-actions">
+                <button class="btn-primary" onclick="submitAdd()">予約する</button>
+                <button class="btn-cancel"  onclick="closeAdd()">キャンセル</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 予約詳細モーダル -->
+<div class="overlay" id="view-overlay">
+    <div class="modal">
+        <div class="modal-hd">
+            <h2 id="view-eq-name">予約詳細</h2>
+            <button class="x-btn" onclick="closeView()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="view-detail" id="view-detail"></div>
+            <div class="modal-actions">
+                <button class="btn-danger"  onclick="deleteRes()">この予約を削除</button>
+                <button class="btn-cancel"  onclick="closeView()">閉じる</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 管理モーダル -->
+<div class="overlay" id="admin-overlay">
+    <div class="modal scrollable">
+        <div class="modal-hd">
+            <h2>⚙️ 管理</h2>
+            <button class="x-btn" onclick="closeAdmin()">✕</button>
+        </div>
+        <div class="admin-sec">
+            <h3>👤 担当者</h3>
+            <div class="item-list" id="user-list"></div>
+            <div class="add-form">
+                <div class="r2">
+                    <input type="text" id="nu-name" placeholder="担当者名" maxlength="15">
+                    <input type="color" id="nu-color" class="ci" value="#1565c0" title="カラー">
+                </div>
+                <button class="add-btn" onclick="addUser()">担当者を追加</button>
+            </div>
+        </div>
+        <div class="admin-sec">
+            <h3>📦 機材</h3>
+            <div class="item-list" id="eq-list"></div>
+            <div class="add-form">
+                <div class="r2">
+                    <input type="text" id="ne-emoji" class="ei" placeholder="📷" maxlength="2">
+                    <input type="text" id="ne-name" placeholder="機材名（例：カメラA）" maxlength="30">
+                </div>
+                <input type="text" id="ne-cat" placeholder="カテゴリ（任意・例：カメラ）" maxlength="20">
+                <button class="add-btn" onclick="addEquipment()">機材を追加</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+    const SUPABASE_URL = 'https://wkramctyxgdjpqueuyfp.supabase.co';
+    const SUPABASE_KEY = 'REDACTED_SUPABASE_KEY';
+    const { createClient } = supabase;
+    const client = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Gantt定数（CSSの変数と一致させる）
+    const EQ_W   = 148;  // --eq-w
+    const HR_W   = 66;   // --hr-w（1時間あたりのpx）
+    const TL_S   = 9;    // 表示開始時
+    const TL_E   = 21;   // 表示終了時
+    const TL_HRS = TL_E - TL_S;
+    const TOTAL_W = TL_HRS * HR_W;  // 時間軸の合計幅
+
+    let equipmentList  = [];
+    let equipmentUsers = [];
+    let reservations   = [];
+    let selectedDate   = new Date();
+    let addEqId   = null;
+    let viewResId = null;
+
+    // ===== 日付ユーティリティ =====
+
+    const toJST = d => new Date(d.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }));
+    const getNow = () => toJST(new Date());
+    const pad    = n  => String(n).padStart(2, '0');
+
+    function dateISO(date) {
+        const d = toJST(date);
+        return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    }
+
+    function fmtTime(iso) {
+        return new Date(iso).toLocaleTimeString('ja-JP', {
+            timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit'
+        });
+    }
+
+    function isSameDay(a, b) {
+        const x = toJST(a instanceof Date ? a : new Date(a));
+        const y = toJST(b instanceof Date ? b : new Date(b));
+        return x.getFullYear()===y.getFullYear() && x.getMonth()===y.getMonth() && x.getDate()===y.getDate();
+    }
+
+    function displayDate(date) {
+        const d    = toJST(date);
+        const days = ['日','月','火','水','木','金','土'];
+        const s    = `${d.getMonth()+1}/${d.getDate()}（${days[d.getDay()]}）`;
+        const now  = getNow();
+        if (isSameDay(date, now)) return s + ' 今日';
+        const tom = new Date(now); tom.setDate(tom.getDate()+1);
+        if (isSameDay(date, tom)) return s + ' 明日';
+        return s;
+    }
+
+    // ===== 日付ナビ =====
+
+    function changeDate(delta) {
+        selectedDate = new Date(selectedDate);
+        selectedDate.setDate(selectedDate.getDate() + delta);
+        document.getElementById('dn-date').textContent = displayDate(selectedDate);
+        renderGantt();
+    }
+
+    function goToday() {
+        selectedDate = new Date();
+        document.getElementById('dn-date').textContent = displayDate(selectedDate);
+        renderGantt();
+    }
+
+    // ===== データ取得 =====
+
+    async function loadAll() {
+        const from = new Date(); from.setDate(from.getDate() - 1);
+        const to   = new Date(); to.setDate(to.getDate() + 60);
+
+        const [eqR, usersR, resR] = await Promise.all([
+            client.from('equipment').select('*').order('display_order').order('id'),
+            client.from('equipment_users').select('*').order('display_order').order('id'),
+            client.from('reservations').select('*')
+                  .gte('end_time',   from.toISOString())
+                  .lte('start_time', to.toISOString())
+                  .order('start_time')
+        ]);
+        if (!eqR.error)    equipmentList  = eqR.data    ?? [];
+        if (!usersR.error) equipmentUsers = usersR.data ?? [];
+        if (!resR.error)   reservations   = resR.data   ?? [];
+    }
+
+    function getResForDate(eqId, date) {
+        const iso  = dateISO(date);
+        const dayS = new Date(`${iso}T00:00:00+09:00`);
+        const dayE = new Date(`${iso}T23:59:59+09:00`);
+        return reservations.filter(r =>
+            r.equipment_id === eqId &&
+            new Date(r.start_time) < dayE &&
+            new Date(r.end_time)   > dayS
+        );
+    }
+
+    // ===== ガントチャート描画 =====
+
+    function renderGantt() {
+        const inner = document.getElementById('gantt-inner');
+
+        if (equipmentList.length === 0) {
+            inner.innerHTML = `<div class="gantt-placeholder">
+                ⚙️ 右上の管理ボタンから機材・担当者を追加してください
+            </div>`;
+            return;
+        }
+
+        // 時刻ラベルヘッダー
+        const hourMarks = Array.from({ length: TL_HRS + 1 }, (_, i) =>
+            `<div class="hour-mark" style="width:${HR_W}px">${TL_S + i}時</div>`
+        ).join('');
+
+        const header = `
+            <div class="gantt-hd">
+                <div class="gantt-hd-eq">機材</div>
+                <div class="gantt-hd-times">${hourMarks}</div>
+            </div>`;
+
+        // 機材行
+        const rows = equipmentList.map(eq => {
+            const dayRes = getResForDate(eq.id, selectedDate);
+            const blocks = dayRes.map(buildBlock).join('');
+
+            // 終日予約チェック（9:00〜21:00 をカバーする予約があるか）
+            const hasAllDay = dayRes.some(r => {
+                const sJST = toJST(new Date(r.start_time));
+                const eJST = toJST(new Date(r.end_time));
+                return (sJST.getHours() + sJST.getMinutes() / 60) <= TL_S &&
+                       (eJST.getHours() + eJST.getMinutes() / 60) >= TL_E;
+            });
+
+            return `
+                <div class="gantt-row"
+                     ondragover="rowDragOver(event)"
+                     ondragleave="rowDragLeave(event)"
+                     ondrop="rowDrop(event,${eq.id})">
+                    <div class="eq-lbl" onclick="eqLblTap(event,${eq.id})">
+                        <span class="eq-emoji">${eq.emoji || '📦'}</span>
+                        <div class="eq-info">
+                            <div class="eq-name">${h(eq.name)}</div>
+                            ${eq.category ? `<div class="eq-cat">${h(eq.category)}</div>` : ''}
+                            <button class="allday-btn${hasAllDay ? ' allday-full' : ''}" onclick="openAllDay(event,${eq.id})" title="終日予約">終日</button>
+                        </div>
+                    </div>
+                    <div class="time-area"
+                         style="width:${TOTAL_W}px"
+                         onmousedown="onTimeMD(event,${eq.id})"
+                         ontouchstart="onTimeTouch(event,${eq.id})">
+                        ${blocks}
+                    </div>
+                </div>`;
+        }).join('');
+
+        // 現在時刻ライン（今日のみ）
+        let nowLine = '';
+        if (isSameDay(selectedDate, new Date())) {
+            const now  = getNow();
+            const frac = now.getHours() + now.getMinutes() / 60 - TL_S;
+            if (frac >= 0 && frac <= TL_HRS) {
+                const curEqW = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--eq-w')) || EQ_W;
+                nowLine = `<div class="now-line" style="left:${curEqW + frac * HR_W}px"></div>`;
+            }
+        }
+
+        inner.innerHTML = header +
+            `<div class="gantt-rows" id="gantt-rows" style="position:relative">${rows}${nowLine}</div>`;
+
+        // アサインモードが有効なら再適用
+        updateAssignMode();
+    }
+
+    function buildBlock(r) {
+        const user  = equipmentUsers.find(u => u.id === r.user_id);
+        const color = user ? user.color : '#9e9e9e';
+        const name  = user ? user.name  : '(削除済)';
+
+        const sJST = toJST(new Date(r.start_time));
+        const eJST = toJST(new Date(r.end_time));
+        const sH   = sJST.getHours() + sJST.getMinutes() / 60;
+        const eH   = eJST.getHours() + eJST.getMinutes() / 60;
+
+        const left  = Math.max(0,          (sH - TL_S) * HR_W);
+        const right = Math.min(TOTAL_W,    (eH - TL_S) * HR_W);
+        const width = right - left;
+        if (width < 2) return '';
+
+        const timeStr = `${fmtTime(r.start_time)}-${fmtTime(r.end_time)}`;
+        const showName = width > 30;
+        const showTime = width > 100;
+
+        return `
+            <div class="res-block"
+                 style="left:${left}px;width:${width}px;background:${color}"
+                 title="${h(name)} ${timeStr}（ドラッグで移動・端をドラッグで長さ変更）"
+                 onmousedown="resBlockMD(event,${r.id})"
+                 ontouchstart="resBlockMD(event,${r.id})">
+                <div class="res-handle-l"
+                     onmousedown="resHandleMD(event,${r.id},'l')"
+                     ontouchstart="resHandleMD(event,${r.id},'l')"></div>
+                ${showName ? `<span class="rb-name">${h(name)}</span>` : ''}
+                ${showTime ? `<span class="rb-time">${timeStr}</span>` : ''}
+                <div class="res-handle-r"
+                     onmousedown="resHandleMD(event,${r.id},'r')"
+                     ontouchstart="resHandleMD(event,${r.id},'r')"></div>
+            </div>`;
+    }
+
+    // ===== ドラッグ選択（Googleカレンダー方式）=====
+
+    let drag       = null;  // { eqId, timeArea, startMins, currentMins } — 新規予約ドラッグ
+    let moveDrag   = null;  // { resId, startMins, durMins, dragStartX, currentDx, hasMoved, block, timeArea } — 移動ドラッグ
+    let resizeDrag = null;  // { resId, edge, origStartMins, origEndMins, dragStartX, currentDx, hasMoved, block } — リサイズドラッグ
+    let touchStartPos   = null;  // タップ検出: タッチ開始座標
+    let touchCreateEqId = null;  // タップ検出: 対象機材ID
+    let touchCreateArea = null;  // タップ検出: 対象time-area要素
+
+    function xToMins(x) {
+        // px → 分（15分スナップ）、タイムライン範囲内にクランプ
+        const raw = x / HR_W * 60;
+        return Math.max(0, Math.min(TL_HRS * 60, Math.round(raw / 15) * 15));
+    }
+
+    function minsToTime(mins) {
+        const h = TL_S + Math.floor(mins / 60);
+        const m = mins % 60;
+        return { h, m };
+    }
+
+    function getClientX(e) {
+        return e.touches ? e.touches[0].clientX : e.clientX;
+    }
+
+    function updatePreview() {
+        const preview = drag.timeArea.querySelector('.drag-preview');
+        if (!preview) return;
+
+        const s = Math.min(drag.startMins, drag.currentMins);
+        const e = Math.max(drag.startMins, drag.currentMins);
+        const dur = e - s;
+
+        const left  = s * HR_W / 60;
+        const width = Math.max(HR_W / 4, dur * HR_W / 60);
+        preview.style.left  = left  + 'px';
+        preview.style.width = width + 'px';
+
+        if (dur >= 15 && width > 70) {
+            const ts = minsToTime(s), te = minsToTime(e);
+            preview.textContent = `${pad(ts.h)}:${pad(ts.m)} 〜 ${pad(te.h)}:${pad(te.m)}`;
+        } else {
+            preview.textContent = '';
+        }
+    }
+
+    function onTimeMD(e, eqId) {
+        if (e.target.closest('.res-block')) return;
+        e.preventDefault();
+
+        const rect  = e.currentTarget.getBoundingClientRect();
+        const startMins = xToMins(getClientX(e) - rect.left);
+
+        // プレビュー要素を追加
+        const preview = document.createElement('div');
+        preview.className = 'drag-preview';
+        e.currentTarget.appendChild(preview);
+
+        drag = { eqId, timeArea: e.currentTarget, startMins, currentMins: startMins };
+        updatePreview();
+    }
+
+    function onTimeTouch(e, eqId) {
+        if (e.target.closest('.res-block')) return;
+        // アサインモード中のタッチ → 終日予約を作成
+        if (mobileSelectedUser !== null) {
+            e.preventDefault();
+            e.stopPropagation();
+            const userId = mobileSelectedUser;
+            mobileSelectedUser = null;
+            updateAssignMode();
+            renderSidebar();
+            rowDropForUser(eqId, userId);
+            return;
+        }
+        // タッチ開始位置を記録するのみ（preventDefault不要 → スクロール可能）
+        touchStartPos   = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        touchCreateEqId = eqId;
+        touchCreateArea = e.currentTarget;
+    }
+
+    document.addEventListener('mousemove', e => {
+        if (drag) {
+            const rect = drag.timeArea.getBoundingClientRect();
+            drag.currentMins = xToMins(getClientX(e) - rect.left);
+            updatePreview();
+        }
+        if (moveDrag) {
+            const dx = e.clientX - moveDrag.dragStartX;
+            moveDrag.currentDx = dx;
+            if (Math.abs(dx) > 5) {
+                moveDrag.hasMoved = true;
+                moveDrag.block.classList.add('is-moving');
+            }
+            if (moveDrag.hasMoved) {
+                const deltaMins  = Math.round(dx / HR_W * 60 / 15) * 15;
+                const newStart   = Math.max(0, Math.min(TL_HRS * 60 - moveDrag.durMins, moveDrag.startMins + deltaMins));
+                moveDrag.block.style.left = (newStart * HR_W / 60) + 'px';
+            }
+        }
+        if (resizeDrag) {
+            const dx = e.clientX - resizeDrag.dragStartX;
+            resizeDrag.currentDx = dx;
+            if (Math.abs(dx) > 3) {
+                resizeDrag.hasMoved = true;
+                resizeDrag.block.classList.add('is-resizing');
+            }
+            if (resizeDrag.hasMoved) {
+                const deltaMins = Math.round(dx / HR_W * 60 / 15) * 15;
+                if (resizeDrag.edge === 'r') {
+                    const newEndMins = Math.max(resizeDrag.origStartMins + 15, Math.min(TL_HRS * 60, resizeDrag.origEndMins + deltaMins));
+                    resizeDrag.block.style.width = ((newEndMins - resizeDrag.origStartMins) * HR_W / 60) + 'px';
+                } else {
+                    const newStartMins = Math.min(resizeDrag.origEndMins - 15, Math.max(0, resizeDrag.origStartMins + deltaMins));
+                    resizeDrag.block.style.left  = (newStartMins * HR_W / 60) + 'px';
+                    resizeDrag.block.style.width = ((resizeDrag.origEndMins - newStartMins) * HR_W / 60) + 'px';
+                }
+            }
+        }
+    });
+
+    document.addEventListener('touchmove', e => {
+        // タップ検出中に動いたらキャンセル（スクロール判定）
+        if (touchStartPos) {
+            const t = e.touches[0];
+            if (Math.abs(t.clientX - touchStartPos.x) > 8 || Math.abs(t.clientY - touchStartPos.y) > 8) {
+                touchStartPos = null; touchCreateEqId = null; touchCreateArea = null;
+            }
+        }
+        if (drag) {
+            e.preventDefault();
+            const rect = drag.timeArea.getBoundingClientRect();
+            drag.currentMins = xToMins(getClientX(e) - rect.left);
+            updatePreview();
+        }
+        if (moveDrag) {
+            e.preventDefault();
+            const dx = getClientX(e) - moveDrag.dragStartX;
+            moveDrag.currentDx = dx;
+            if (Math.abs(dx) > 5) {
+                moveDrag.hasMoved = true;
+                moveDrag.block.classList.add('is-moving');
+            }
+            if (moveDrag.hasMoved) {
+                const deltaMins = Math.round(dx / HR_W * 60 / 15) * 15;
+                const newStart  = Math.max(0, Math.min(TL_HRS * 60 - moveDrag.durMins, moveDrag.startMins + deltaMins));
+                moveDrag.block.style.left = (newStart * HR_W / 60) + 'px';
+            }
+        }
+        if (resizeDrag) {
+            e.preventDefault();
+            const dx = getClientX(e) - resizeDrag.dragStartX;
+            resizeDrag.currentDx = dx;
+            if (Math.abs(dx) > 3) {
+                resizeDrag.hasMoved = true;
+                resizeDrag.block.classList.add('is-resizing');
+            }
+            if (resizeDrag.hasMoved) {
+                const deltaMins = Math.round(dx / HR_W * 60 / 15) * 15;
+                if (resizeDrag.edge === 'r') {
+                    const newEndMins = Math.max(resizeDrag.origStartMins + 15, Math.min(TL_HRS * 60, resizeDrag.origEndMins + deltaMins));
+                    resizeDrag.block.style.width = ((newEndMins - resizeDrag.origStartMins) * HR_W / 60) + 'px';
+                } else {
+                    const newStartMins = Math.min(resizeDrag.origEndMins - 15, Math.max(0, resizeDrag.origStartMins + deltaMins));
+                    resizeDrag.block.style.left  = (newStartMins * HR_W / 60) + 'px';
+                    resizeDrag.block.style.width = ((resizeDrag.origEndMins - newStartMins) * HR_W / 60) + 'px';
+                }
+            }
+        }
+    }, { passive: false });
+
+    function finishDrag() {
+        if (!drag) return;
+
+        // プレビュー削除
+        const preview = drag.timeArea.querySelector('.drag-preview');
+        if (preview) preview.remove();
+
+        const s = Math.min(drag.startMins, drag.currentMins);
+        const e = Math.max(drag.startMins, drag.currentMins);
+
+        const ts = minsToTime(s);
+        const te = minsToTime(Math.min(TL_HRS * 60, e < s + 15 ? s + 60 : e)); // 最小1時間（クリック時）または選択範囲
+
+        openAdd(drag.eqId, ts.h, ts.m, te.h, te.m);
+        drag = null;
+    }
+
+    document.addEventListener('mouseup',  () => { finishResizeDrag(); finishMoveDrag(); finishDrag(); });
+    document.addEventListener('touchend', e => {
+        // タップで新規予約モーダルを開く（移動量 < 15px の場合）
+        if (touchStartPos && touchCreateEqId !== null) {
+            const t = e.changedTouches[0];
+            if (Math.abs(t.clientX - touchStartPos.x) < 15 && Math.abs(t.clientY - touchStartPos.y) < 15) {
+                const rect = touchCreateArea.getBoundingClientRect();
+                const startMins = xToMins(touchStartPos.x - rect.left);
+                const ts = minsToTime(startMins);
+                const te = minsToTime(Math.min(TL_HRS * 60, startMins + 60));
+                openAdd(touchCreateEqId, ts.h, ts.m, te.h, te.m);
+            }
+            touchStartPos = null; touchCreateEqId = null; touchCreateArea = null;
+        }
+        finishResizeDrag(); finishMoveDrag(); finishDrag();
+    });
+
+    function openAllDay(e, eqId) {
+        e.stopPropagation();  // ガントのドラッグ開始を防ぐ
+        openAdd(eqId, TL_S, 0, TL_E, 0);
+    }
+
+    // ===== 既存予約ブロックのリサイズ =====
+
+    function resHandleMD(e, resId, edge) {
+        e.stopPropagation();  // 移動ドラッグを発火させない
+        const r = reservations.find(x => x.id === resId);
+        if (!r) return;
+
+        const sJST         = toJST(new Date(r.start_time));
+        const eJST         = toJST(new Date(r.end_time));
+        const origStartMins = (sJST.getHours() - TL_S) * 60 + sJST.getMinutes();
+        const origEndMins   = (eJST.getHours() - TL_S) * 60 + eJST.getMinutes();
+
+        resizeDrag = {
+            resId, edge,
+            origStartMins, origEndMins,
+            dragStartX: getClientX(e),
+            currentDx:  0,
+            hasMoved:   false,
+            block:      e.currentTarget.closest('.res-block')
+        };
+    }
+
+    async function finishResizeDrag() {
+        if (!resizeDrag) return;
+        const rd = resizeDrag;
+        resizeDrag = null;
+
+        rd.block.classList.remove('is-resizing');
+        rd.block.style.left  = '';
+        rd.block.style.width = '';
+
+        if (!rd.hasMoved) return;
+
+        const deltaMins = Math.round(rd.currentDx / HR_W * 60 / 15) * 15;
+        let newStartMins = rd.origStartMins;
+        let newEndMins   = rd.origEndMins;
+
+        if (rd.edge === 'r') {
+            newEndMins = Math.max(rd.origStartMins + 15, Math.min(TL_HRS * 60, rd.origEndMins + deltaMins));
+        } else {
+            newStartMins = Math.min(rd.origEndMins - 15, Math.max(0, rd.origStartMins + deltaMins));
+        }
+
+        const ts      = minsToTime(newStartMins);
+        const te      = minsToTime(newEndMins);
+        const dateStr = dateISO(selectedDate);
+        const newS    = new Date(`${dateStr}T${pad(ts.h)}:${pad(ts.m)}:00+09:00`);
+        const newE    = new Date(`${dateStr}T${pad(te.h)}:${pad(te.m)}:00+09:00`);
+
+        const r = reservations.find(x => x.id === rd.resId);
+
+        const conflict = reservations.find(x =>
+            x.id !== rd.resId &&
+            x.equipment_id === r.equipment_id &&
+            newS < new Date(x.end_time) &&
+            newE > new Date(x.start_time)
+        );
+        if (conflict) {
+            const cu = equipmentUsers.find(u => u.id === conflict.user_id);
+            alert(`その時間帯は${cu ? cu.name + 'さんの' : '別の'}予約と重複します`);
+            await loadAll(); renderGantt();
+            return;
+        }
+
+        const { error } = await client.from('reservations').update({
+            start_time: newS.toISOString(),
+            end_time:   newE.toISOString()
+        }).eq('id', rd.resId);
+
+        if (error) { alert('更新に失敗しました: ' + error.message); }
+        await loadAll(); renderGantt();
+    }
+
+    // ===== 既存予約ブロックのドラッグ移動 =====
+
+    function resBlockMD(e, resId) {
+        e.stopPropagation();  // onTimeMD（新規ドラッグ）を発火させない
+        const r = reservations.find(x => x.id === resId);
+        if (!r) return;
+
+        const sJST     = toJST(new Date(r.start_time));
+        const eJST     = toJST(new Date(r.end_time));
+        const startMins = (sJST.getHours() - TL_S) * 60 + sJST.getMinutes();
+        const endMins   = (eJST.getHours() - TL_S) * 60 + eJST.getMinutes();
+
+        moveDrag = {
+            resId,
+            startMins,
+            durMins:    endMins - startMins,
+            dragStartX: getClientX(e),
+            currentDx:  0,
+            hasMoved:   false,
+            block:      e.currentTarget,
+            timeArea:   e.currentTarget.closest('.time-area')
+        };
+    }
+
+    async function finishMoveDrag() {
+        if (!moveDrag) return;
+        const md = moveDrag;
+        moveDrag = null;
+
+        // 外観を元に戻す
+        md.block.classList.remove('is-moving');
+        md.block.style.left = '';  // renderGantt で再計算
+
+        if (!md.hasMoved) {
+            // クリックとして処理 → 詳細モーダルを開く
+            openView(md.resId);
+            return;
+        }
+
+        // 新しい開始・終了時刻を計算（15分スナップ済み）
+        const deltaMins    = Math.round(md.currentDx / HR_W * 60 / 15) * 15;
+        const newStartMins = Math.max(0, Math.min(TL_HRS * 60 - md.durMins, md.startMins + deltaMins));
+        const newEndMins   = newStartMins + md.durMins;
+
+        const ts      = minsToTime(newStartMins);
+        const te      = minsToTime(newEndMins);
+        const dateStr = dateISO(selectedDate);
+        const newS    = new Date(`${dateStr}T${pad(ts.h)}:${pad(ts.m)}:00+09:00`);
+        const newE    = new Date(`${dateStr}T${pad(te.h)}:${pad(te.m)}:00+09:00`);
+
+        const r = reservations.find(x => x.id === md.resId);
+
+        // 他の予約と重複チェック（自身は除外）
+        const conflict = reservations.find(x =>
+            x.id !== md.resId &&
+            x.equipment_id === r.equipment_id &&
+            newS < new Date(x.end_time) &&
+            newE > new Date(x.start_time)
+        );
+        if (conflict) {
+            const cu = equipmentUsers.find(u => u.id === conflict.user_id);
+            alert(`その時間帯は${cu ? cu.name + 'さんの' : '別の'}予約と重複します`);
+            await loadAll(); renderGantt();
+            return;
+        }
+
+        const { error } = await client.from('reservations').update({
+            start_time: newS.toISOString(),
+            end_time:   newE.toISOString()
+        }).eq('id', md.resId);
+
+        if (error) { alert('更新に失敗しました: ' + error.message); }
+        await loadAll(); renderGantt();
+    }
+
+    // ===== 予約追加モーダル =====
+
+    function openAdd(eqId, sh, sm, eh, em) {
+        addEqId = eqId;
+        const eq = equipmentList.find(e => e.id === eqId);
+        document.getElementById('add-title').textContent = `${eq.emoji || '📦'} ${eq.name} を予約`;
+
+        // 担当者リスト更新
+        const sel = document.getElementById('add-user');
+        sel.innerHTML = '<option value="">-- 担当者を選択 --</option>';
+        equipmentUsers.forEach(u => {
+            sel.innerHTML += `<option value="${u.id}">${h(u.name)}</option>`;
+        });
+
+        document.getElementById('add-date').value  = dateISO(selectedDate);
+        document.getElementById('add-start').value = `${pad(sh)}:${pad(sm)}`;
+        document.getElementById('add-end').value   = `${pad(eh)}:${pad(em)}`;
+        document.getElementById('add-purpose').value = '';
+        document.getElementById('conflict-warn').style.display = 'none';
+
+        document.getElementById('add-overlay').classList.add('active');
+        checkConflict();
+    }
+
+    function closeAdd() {
+        document.getElementById('add-overlay').classList.remove('active');
+        addEqId = null;
+    }
+
+    function checkConflict() {
+        if (!addEqId) return;
+        const dateStr  = document.getElementById('add-date').value;
+        const startStr = document.getElementById('add-start').value;
+        const endStr   = document.getElementById('add-end').value;
+        const warn     = document.getElementById('conflict-warn');
+
+        if (!dateStr || !startStr || !endStr) { warn.style.display = 'none'; return; }
+
+        const newS = new Date(`${dateStr}T${startStr}:00+09:00`);
+        const newE = new Date(`${dateStr}T${endStr}:00+09:00`);
+
+        if (newE <= newS) {
+            warn.textContent = '⚠️ 終了は開始より後にしてください';
+            warn.style.display = 'block'; return;
+        }
+
+        const conflicts = reservations.filter(r =>
+            r.equipment_id === addEqId &&
+            newS < new Date(r.end_time) &&
+            newE > new Date(r.start_time)
+        );
+
+        if (conflicts.length > 0) {
+            const detail = conflicts.map(r => {
+                const u = equipmentUsers.find(x => x.id === r.user_id);
+                return `${u ? u.name : '?'}（${fmtTime(r.start_time)}〜${fmtTime(r.end_time)}）`;
+            }).join('、');
+            warn.innerHTML = `⚠️ 重複があります：${detail}`;
+            warn.style.display = 'block';
+        } else {
+            warn.style.display = 'none';
+        }
+    }
+
+    async function submitAdd() {
+        const userId   = document.getElementById('add-user').value;
+        const dateStr  = document.getElementById('add-date').value;
+        const startStr = document.getElementById('add-start').value;
+        const endStr   = document.getElementById('add-end').value;
+        const purpose  = document.getElementById('add-purpose').value.trim();
+
+        if (!userId)   { alert('担当者を選択してください'); return; }
+        if (!dateStr || !startStr || !endStr) { alert('日付と時間を入力してください'); return; }
+
+        const newS = new Date(`${dateStr}T${startStr}:00+09:00`);
+        const newE = new Date(`${dateStr}T${endStr}:00+09:00`);
+
+        if (newE <= newS) { alert('終了は開始より後にしてください'); return; }
+
+        const hasConflict = reservations.some(r =>
+            r.equipment_id === addEqId &&
+            newS < new Date(r.end_time) &&
+            newE > new Date(r.start_time)
+        );
+        if (hasConflict) { alert('この時間帯はすでに予約が入っています'); return; }
+
+        const { error } = await client.from('reservations').insert({
+            equipment_id: addEqId,
+            user_id:      parseInt(userId),
+            start_time:   newS.toISOString(),
+            end_time:     newE.toISOString(),
+            purpose
+        });
+        if (error) { alert('登録に失敗しました: ' + error.message); return; }
+
+        closeAdd();
+        await loadAll();
+        renderGantt();
+    }
+
+    // ===== 予約詳細モーダル =====
+
+    function openView(resId) {
+        viewResId = resId;
+        const r    = reservations.find(x => x.id === resId);
+        if (!r) return;
+        const eq   = equipmentList.find(e => e.id === r.equipment_id);
+        const user = equipmentUsers.find(u => u.id === r.user_id);
+
+        document.getElementById('view-eq-name').textContent =
+            `${eq ? eq.emoji || '📦' : ''} ${eq ? eq.name : ''}`;
+
+        document.getElementById('view-detail').innerHTML = `
+            <div class="vd-user">
+                <div class="vd-dot" style="background:${user ? user.color : '#9e9e9e'}"></div>
+                <div class="vd-name">${h(user ? user.name : '(削除済)')}</div>
+            </div>
+            <div class="vd-time">${fmtTime(r.start_time)} 〜 ${fmtTime(r.end_time)}</div>
+            ${r.purpose ? `<div class="vd-purpose">「${h(r.purpose)}」</div>` : ''}`;
+
+        document.getElementById('view-overlay').classList.add('active');
+    }
+
+    function closeView() {
+        document.getElementById('view-overlay').classList.remove('active');
+        viewResId = null;
+    }
+
+    async function deleteRes() {
+        if (!viewResId) return;
+        const r    = reservations.find(x => x.id === viewResId);
+        const user = r ? equipmentUsers.find(u => u.id === r.user_id) : null;
+        if (!confirm(`${user ? user.name + 'さんの' : ''}予約を削除しますか？`)) return;
+        const { error } = await client.from('reservations').delete().eq('id', viewResId);
+        if (error) { alert('削除に失敗しました'); return; }
+        closeView();
+        await loadAll();
+        renderGantt();
+    }
+
+    // ===== 管理パネル =====
+
+    function openAdmin() {
+        renderAdminLists();
+        document.getElementById('admin-overlay').classList.add('active');
+    }
+    function closeAdmin() {
+        document.getElementById('admin-overlay').classList.remove('active');
+    }
+
+    let editingEqId   = null;
+    let editingUserId = null;
+    let eqDragId      = null;
+
+    function renderAdminLists() {
+        renderUserList();
+        renderEqList();
+    }
+
+    function renderUserList() {
+        document.getElementById('user-list').innerHTML = equipmentUsers.length === 0
+            ? '<div class="empty-msg">担当者が登録されていません</div>'
+            : equipmentUsers.map(u => {
+                if (u.id === editingUserId) return `
+                    <div class="item-row editing" data-uid="${u.id}">
+                        <div class="edit-inputs">
+                            <input type="color" id="eu-color-${u.id}" value="${u.color}"
+                                   style="width:36px;height:34px;padding:2px;border:1.5px solid #c5cae9;border-radius:4px;cursor:pointer;flex:none">
+                            <input class="ei-name" id="eu-name-${u.id}" value="${h(u.name)}" placeholder="担当者名" maxlength="15">
+                        </div>
+                        <button class="save-btn" onclick="saveEditUser(${u.id})">保存</button>
+                        <button class="ccl-btn" onclick="cancelEditUser()">取消</button>
+                    </div>`;
+                return `
+                    <div class="item-row">
+                        <div class="clr-dot" style="background:${u.color}"></div>
+                        <span class="item-txt">${h(u.name)}</span>
+                        <button class="edit-btn" onclick="editUser(${u.id})">編集</button>
+                        <button class="del-btn" onclick="deleteUser(${u.id},'${h(u.name)}')">削除</button>
+                    </div>`;
+            }).join('');
+
+        if (editingUserId) {
+            setTimeout(() => document.getElementById(`eu-name-${editingUserId}`)?.focus(), 30);
+        }
+    }
+
+    function renderEqList() {
+        document.getElementById('eq-list').innerHTML = equipmentList.length === 0
+            ? '<div class="empty-msg">機材が登録されていません</div>'
+            : equipmentList.map(eq => {
+                // 編集モード
+                if (eq.id === editingEqId) return `
+                    <div class="item-row editing" data-eq-id="${eq.id}">
+                        <div class="edit-inputs">
+                            <input class="ei-emoji" id="ee-emoji-${eq.id}" value="${h(eq.emoji || '')}" placeholder="📷" maxlength="2">
+                            <input class="ei-name"  id="ee-name-${eq.id}"  value="${h(eq.name)}"       placeholder="機材名">
+                            <input class="ei-cat"   id="ee-cat-${eq.id}"   value="${h(eq.category || '')}" placeholder="カテゴリ">
+                        </div>
+                        <button class="save-btn" onclick="saveEditEq(${eq.id})">保存</button>
+                        <button class="ccl-btn"  onclick="cancelEditEq()">取消</button>
+                    </div>`;
+
+                // 通常表示
+                return `
+                    <div class="item-row"
+                         data-eq-id="${eq.id}"
+                         draggable="true"
+                         ondragstart="eqDragStart(event,${eq.id})"
+                         ondragover="eqDragOver(event)"
+                         ondragleave="eqDragLeave(event)"
+                         ondrop="eqDrop(event,${eq.id})">
+                        <span class="drag-grip" title="ドラッグで並び替え">⠿</span>
+                        <span class="item-txt">${eq.emoji || '📦'} ${h(eq.name)}</span>
+                        <span class="item-sub">${h(eq.category || '')}</span>
+                        <button class="edit-btn" onclick="editEq(${eq.id})">編集</button>
+                        <button class="del-btn"  onclick="deleteEquipment(${eq.id},'${h(eq.name)}')">削除</button>
+                    </div>`;
+            }).join('');
+
+        // 編集中なら名前フィールドにフォーカス
+        if (editingEqId) {
+            setTimeout(() => document.getElementById(`ee-name-${editingEqId}`)?.focus(), 30);
+        }
+    }
+
+    // ===== 担当者 編集 =====
+
+    function editUser(id) {
+        editingUserId = id;
+        renderUserList();
+    }
+
+    function cancelEditUser() {
+        editingUserId = null;
+        renderUserList();
+    }
+
+    async function saveEditUser(id) {
+        const name  = document.getElementById(`eu-name-${id}`).value.trim();
+        const color = document.getElementById(`eu-color-${id}`).value;
+        if (!name) { alert('担当者名を入力してください'); return; }
+        const { error } = await client.from('equipment_users').update({ name, color }).eq('id', id);
+        if (error) { alert('更新に失敗しました: ' + error.message); return; }
+        editingUserId = null;
+        await loadAll(); renderGantt(); renderAdminLists(); renderSidebar();
+    }
+
+    // ===== 機材 編集 =====
+
+    function editEq(id) {
+        editingEqId = id;
+        renderEqList();
+    }
+
+    function cancelEditEq() {
+        editingEqId = null;
+        renderEqList();
+    }
+
+    async function saveEditEq(id) {
+        const emoji = document.getElementById(`ee-emoji-${id}`).value.trim() || '📦';
+        const name  = document.getElementById(`ee-name-${id}`).value.trim();
+        const cat   = document.getElementById(`ee-cat-${id}`).value.trim();
+        if (!name) { alert('機材名を入力してください'); return; }
+        const { error } = await client.from('equipment').update({ name, emoji, category: cat }).eq('id', id);
+        if (error) { alert('更新に失敗しました: ' + error.message); return; }
+        editingEqId = null;
+        await loadAll(); renderGantt(); renderAdminLists();
+    }
+
+    // ===== 機材 並び替え（ドラッグ）=====
+
+    function eqDragStart(e, id) {
+        eqDragId = id;
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => e.target.closest('.item-row')?.classList.add('dragging-eq'), 0);
+    }
+
+    function eqDragOver(e) {
+        e.preventDefault();
+        const row  = e.currentTarget;
+        const mid  = row.getBoundingClientRect().top + row.offsetHeight / 2;
+        row.classList.remove('drop-above', 'drop-below');
+        row.classList.add(e.clientY < mid ? 'drop-above' : 'drop-below');
+    }
+
+    function eqDragLeave(e) {
+        e.currentTarget.classList.remove('drop-above', 'drop-below');
+    }
+
+    async function eqDrop(e, targetId) {
+        e.preventDefault();
+        const row = e.currentTarget;
+        const insertBefore = row.classList.contains('drop-above');
+        row.classList.remove('drop-above', 'drop-below', 'dragging-eq');
+
+        if (eqDragId === null || eqDragId === targetId) { eqDragId = null; return; }
+
+        const fromIdx = equipmentList.findIndex(eq => eq.id === eqDragId);
+        let   toIdx   = equipmentList.findIndex(eq => eq.id === targetId);
+        if (fromIdx === -1 || toIdx === -1) { eqDragId = null; return; }
+
+        // 並び順を更新
+        const newList = [...equipmentList];
+        const [item]  = newList.splice(fromIdx, 1);
+        if (!insertBefore && toIdx >= fromIdx) toIdx++;
+        else if (insertBefore && toIdx < fromIdx) { /* already correct */ }
+        newList.splice(insertBefore ? toIdx : Math.max(0, toIdx - 1), 0, item);
+
+        await Promise.all(newList.map((eq, i) =>
+            client.from('equipment').update({ display_order: i }).eq('id', eq.id)
+        ));
+
+        eqDragId = null;
+        await loadAll(); renderGantt(); renderEqList();
+    }
+
+    async function addUser() {
+        const name  = document.getElementById('nu-name').value.trim();
+        const color = document.getElementById('nu-color').value;
+        if (!name) { alert('担当者名を入力してください'); return; }
+        const { error } = await client.from('equipment_users').insert({ name, color });
+        if (error) { alert('追加に失敗しました: ' + error.message); return; }
+        document.getElementById('nu-name').value = '';
+        await loadAll(); renderGantt(); renderAdminLists(); renderSidebar();
+    }
+
+    async function deleteUser(id, name) {
+        if (!confirm(`「${name}」を削除しますか？\n関連する予約の担当者情報が消えます。`)) return;
+        const { error } = await client.from('equipment_users').delete().eq('id', id);
+        if (error) { alert('削除に失敗しました'); return; }
+        await loadAll(); renderGantt(); renderAdminLists(); renderSidebar();
+    }
+
+    async function addEquipment() {
+        const emoji = document.getElementById('ne-emoji').value.trim() || '📦';
+        const name  = document.getElementById('ne-name').value.trim();
+        const cat   = document.getElementById('ne-cat').value.trim();
+        if (!name) { alert('機材名を入力してください'); return; }
+        const { error } = await client.from('equipment').insert({ name, emoji, category: cat, display_order: equipmentList.length });
+        if (error) { alert('追加に失敗しました: ' + error.message); return; }
+        document.getElementById('ne-emoji').value = '';
+        document.getElementById('ne-name').value  = '';
+        document.getElementById('ne-cat').value   = '';
+        await loadAll(); renderGantt(); renderAdminLists();
+    }
+
+    async function deleteEquipment(id, name) {
+        if (!confirm(`「${name}」を削除しますか？\n関連する予約もすべて削除されます。`)) return;
+        const { error } = await client.from('equipment').delete().eq('id', id);
+        if (error) { alert('削除に失敗しました'); return; }
+        await loadAll(); renderGantt(); renderAdminLists();
+    }
+
+    // ===== サイドバー（担当者カード）=====
+
+    let sidebarDragUserId  = null;
+    let mobileSelectedUser = null;  // タッチデバイス用：選択中の担当者ID
+
+    function renderSidebar() {
+        if (sidebarDragUserId !== null) return;  // ドラッグ中は再描画しない
+        const sb = document.getElementById('sidebar');
+        if (!sb) return;
+        if (equipmentUsers.length === 0) {
+            sb.innerHTML = '<div class="sb-title">担当者</div><div class="sb-hint">管理画面から担当者を追加してください</div>';
+            return;
+        }
+        sb.innerHTML = '<div class="sb-title">担当者</div>' +
+            equipmentUsers.map(u => `
+                <div class="usr-card${mobileSelectedUser === u.id ? ' selected' : ''}"
+                     draggable="true"
+                     ondragstart="sidebarDragStart(event,${u.id})"
+                     ondragend="sidebarDragEnd(event)"
+                     onclick="usrCardTap(${u.id})"
+                     title="${h(u.name)}をドロップまたはタップして終日予約">
+                    <div class="usr-dot-lg" style="background:${u.color}"></div>
+                    <div class="usr-cname">${h(u.name)}</div>
+                </div>`).join('') +
+            `<div class="sb-hint">${mobileSelectedUser !== null ? '▼機材行をタップ' : 'PCはドラッグ<br>スマホはタップ→行タップ'}</div>`;
+    }
+
+    // アサインモードの表示制御（バナー + gantt-rows クラス）
+    function updateAssignMode() {
+        const ganttRows = document.getElementById('gantt-rows');
+        if (ganttRows) ganttRows.classList.toggle('assign-mode', mobileSelectedUser !== null);
+
+        // バナーの更新
+        const gw = document.getElementById('gantt-wrap');
+        let banner = document.getElementById('assign-banner');
+        if (mobileSelectedUser !== null) {
+            const u = equipmentUsers.find(x => x.id === mobileSelectedUser);
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.id = 'assign-banner';
+                banner.className = 'assign-banner';
+                gw.insertBefore(banner, gw.firstChild);
+            }
+            banner.innerHTML = `
+                <div class="assign-banner-dot" style="background:${u ? u.color : '#9e9e9e'}"></div>
+                <span>${h(u ? u.name : '')}さんを選択中 — 機材の行をタップして終日予約</span>
+                <button class="assign-cancel-btn" onclick="usrCardTap(${mobileSelectedUser})">✕ キャンセル</button>`;
+        } else if (banner) {
+            banner.remove();
+        }
+    }
+
+    // 担当者カードのタップ（モバイル）
+    function usrCardTap(userId) {
+        mobileSelectedUser = (mobileSelectedUser === userId) ? null : userId;
+        renderSidebar();
+        updateAssignMode();
+    }
+
+    // 機材ラベル（左列）タップ → アサインモードなら終日予約
+    function eqLblTap(e, eqId) {
+        if (mobileSelectedUser === null) return;
+        if (e.target.closest('.allday-btn')) return;
+        e.preventDefault();
+        const userId = mobileSelectedUser;
+        mobileSelectedUser = null;
+        updateAssignMode();
+        renderSidebar();
+        rowDropForUser(eqId, userId);
+    }
+
+    function sidebarDragStart(e, userId) {
+        sidebarDragUserId = userId;
+        e.dataTransfer.effectAllowed = 'copy';
+        e.dataTransfer.setData('text/plain', String(userId));
+    }
+
+    function sidebarDragEnd() {
+        sidebarDragUserId = null;
+        document.querySelectorAll('.gantt-row.drag-over').forEach(el => el.classList.remove('drag-over'));
+    }
+
+    function rowDragOver(e) {
+        if (sidebarDragUserId === null) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        e.currentTarget.classList.add('drag-over');
+    }
+
+    function rowDragLeave(e) {
+        e.currentTarget.classList.remove('drag-over');
+    }
+
+    async function rowDrop(e, eqId) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+        if (sidebarDragUserId === null) return;
+        const userId = sidebarDragUserId;
+        sidebarDragUserId = null;
+        await rowDropForUser(eqId, userId);
+    }
+
+    // PC ドラッグ・モバイルタップ共通の終日予約登録
+    async function rowDropForUser(eqId, userId) {
+        const dateStr = dateISO(selectedDate);
+        const newS    = new Date(`${dateStr}T${pad(TL_S)}:00:00+09:00`);
+        const newE    = new Date(`${dateStr}T${pad(TL_E)}:00:00+09:00`);
+
+        const conflict = reservations.find(r =>
+            r.equipment_id === eqId &&
+            newS < new Date(r.end_time) &&
+            newE > new Date(r.start_time)
+        );
+        if (conflict) {
+            const cu = equipmentUsers.find(u => u.id === conflict.user_id);
+            alert(`この機材は${cu ? cu.name + 'さんの' : '別の'}予約と重複します`);
+            return;
+        }
+
+        const { error } = await client.from('reservations').insert({
+            equipment_id: eqId,
+            user_id:      userId,
+            start_time:   newS.toISOString(),
+            end_time:     newE.toISOString(),
+            purpose:      ''
+        });
+        if (error) { alert('登録に失敗しました: ' + error.message); return; }
+        await loadAll(); renderGantt(); renderSidebar();
+    }
+
+    // ===== リアルタイム更新 =====
+
+    client.channel('gantt-v3')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations' }, async () => {
+            await loadAll(); renderGantt();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'equipment' }, async () => {
+            await loadAll(); renderGantt();
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'equipment_users' }, async () => {
+            await loadAll(); renderGantt(); renderSidebar();
+        })
+        .subscribe();
+
+    // モーダル外クリックで閉じる
+    ['add-overlay','view-overlay','admin-overlay'].forEach(id => {
+        document.getElementById(id).addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+        });
+    });
+
+    // 現在時刻ラインを1分ごとに更新
+    setInterval(renderGantt, 60000);
+
+    function h(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+                              .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ===== カレンダーポップアップ =====
+
+    let calYear = 0, calMonth = 0;
+
+    function toggleCalendar() {
+        const popup = document.getElementById('cal-popup');
+        if (popup.classList.contains('open')) {
+            popup.classList.remove('open');
+        } else {
+            const d = toJST(selectedDate);
+            calYear  = d.getFullYear();
+            calMonth = d.getMonth();
+            renderCal();
+            popup.classList.add('open');
+        }
+    }
+
+    function closeCalendar() {
+        document.getElementById('cal-popup').classList.remove('open');
+    }
+
+    function calPrev() {
+        if (--calMonth < 0) { calMonth = 11; calYear--; }
+        renderCal();
+    }
+
+    function calNext() {
+        if (++calMonth > 11) { calMonth = 0; calYear++; }
+        renderCal();
+    }
+
+    function renderCal() {
+        const MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+        document.getElementById('cal-ml').textContent = `${calYear}年 ${MONTHS[calMonth]}`;
+
+        const today    = toJST(new Date());
+        const sel      = toJST(selectedDate);
+        const first    = new Date(calYear, calMonth, 1);
+        const last     = new Date(calYear, calMonth + 1, 0);
+        const startDow = first.getDay();  // 0=日曜
+        const prevLast = new Date(calYear, calMonth, 0).getDate();
+
+        let html = '';
+
+        // 前月末尾（グレー）
+        for (let i = startDow - 1; i >= 0; i--) {
+            const d   = prevLast - i;
+            const dow = startDow - 1 - i;
+            const cls = `cal-day other-m${dow === 0 ? ' sun-d' : dow === 6 ? ' sat-d' : ''}`;
+            html += `<div class="${cls}">${d}</div>`;
+        }
+
+        // 当月日
+        for (let d = 1; d <= last.getDate(); d++) {
+            const dow    = (startDow + d - 1) % 7;
+            const isToday = calYear === today.getFullYear() && calMonth === today.getMonth() && d === today.getDate();
+            const isSel   = calYear === sel.getFullYear()   && calMonth === sel.getMonth()   && d === sel.getDate();
+            const cls = ['cal-day',
+                dow === 0 ? 'sun-d' : dow === 6 ? 'sat-d' : '',
+                isSel ? 'is-sel' : isToday ? 'is-today' : ''
+            ].filter(Boolean).join(' ');
+            html += `<div class="${cls}" onclick="pickCalDay(${calYear},${calMonth},${d})">${d}</div>`;
+        }
+
+        // 次月先頭（グレー）
+        const totalCells = Math.ceil((startDow + last.getDate()) / 7) * 7;
+        const trailing   = totalCells - startDow - last.getDate();
+        for (let d = 1; d <= trailing; d++) {
+            const dow = (startDow + last.getDate() + d - 1) % 7;
+            const cls = `cal-day other-m${dow === 0 ? ' sun-d' : dow === 6 ? ' sat-d' : ''}`;
+            html += `<div class="${cls}">${d}</div>`;
+        }
+
+        document.getElementById('cal-days').innerHTML = html;
+    }
+
+    function pickCalDay(year, month, day) {
+        selectedDate = new Date(year, month, day, 12, 0, 0);
+        document.getElementById('dn-date').textContent = displayDate(selectedDate);
+        closeCalendar();
+        renderGantt();
+    }
+
+    // カレンダー外クリックで閉じる
+    document.addEventListener('click', e => {
+        const popup = document.getElementById('cal-popup');
+        if (!popup.classList.contains('open')) return;
+        const wrap = document.querySelector('.date-nav-wrap');
+        if (!wrap.contains(e.target)) closeCalendar();
+    });
+
+    // ===== 初期化 =====
+    async function init() {
+        document.getElementById('dn-date').textContent = displayDate(selectedDate);
+        await loadAll();
+        renderGantt();
+        renderSidebar();
+    }
+
+    init();
+</script>
+</body>
+</html>
