@@ -375,13 +375,6 @@
     let members = [];
     let statuses = [];
 
-    // ローマ字変換テーブル
-    const romajiMap = {
-        '山口':'Yamaguchi','武藤':'Muto','大場':'Oba','相羽':'Aiba',
-        '岡村':'Okamura','太田':'Ota','五藤':'Goto','加藤':'Kato','今井':'Imai'
-    };
-
-    function toRomaji(name) { return romajiMap[name] || ''; }
 
     // 動的CSSを生成
     function applyStatusStyles() {
@@ -418,13 +411,11 @@
         grid.innerHTML = members.map(m => {
             const s = statuses.find(s => s.name === m.status) || statuses[0];
             const emoji = s ? s.emoji : '';
-            const romaji = toRomaji(m.name);
             return `
                 <div class="member-card" onclick="openModal(${m.id}, '${m.name}')">
                     <div class="status-bar bar-${m.status}"></div>
                     <div class="card-content">
                         <div class="member-name">${m.name}</div>
-                        ${romaji ? `<div class="member-name-en">${romaji}</div>` : '<div class="member-name-en">&nbsp;</div>'}
                         <span class="status-badge badge-${m.status}">${emoji} ${m.status}</span>
                         <div class="updated-time">${formatTime(m.updated_at)}</div>
                     </div>
