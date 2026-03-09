@@ -7,7 +7,7 @@
     <style>
         :root {
             --primary: #1a1a2e;
-            --eq-w: 148px;
+            --eq-w: 180px;
             --hr-w: 66px;
             --row-h: 60px;
             --hd-h: 52px;
@@ -156,6 +156,32 @@
         }
         .rb-name { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
         .rb-time { font-size: 10px; opacity: 0.88; flex: none; }
+        /* ブロック内コピーボタン */
+        .rb-copy-btn {
+            background: rgba(255,255,255,0.22); border: none; color: white;
+            font-size: 10px; padding: 1px 5px; border-radius: 3px;
+            cursor: pointer; flex: none; line-height: 1.6;
+        }
+        .rb-copy-btn:hover { background: rgba(255,255,255,0.45); }
+        /* view modal edit button */
+        .btn-edit {
+            padding: 12px; background: #e8eaf6; color: #1a1a2e;
+            border: 2px solid #c5cae9; border-radius: 5px;
+            font-size: 14px; font-weight: 700; cursor: pointer;
+        }
+        /* 複数日ブロック */
+        .multi-day-block {
+            cursor: pointer;
+            background-image: repeating-linear-gradient(
+                -45deg,
+                rgba(255,255,255,0.12) 0, rgba(255,255,255,0.12) 4px,
+                transparent 4px, transparent 8px
+            );
+        }
+        .rb-cont-l, .rb-cont-r { font-size: 9px; flex: none; opacity: 0.85; }
+        .rb-cont-r { margin-left: auto; }
+        /* フォームラベルヒント */
+        .lbl-hint { font-weight: 400; color: #bbb; font-size: 11px; margin-left: 4px; }
 
         /* リサイズハンドル */
         .res-handle-l, .res-handle-r {
@@ -410,6 +436,86 @@
         .cal-day.sat-d    { color: #1565c0; }
         .cal-day.sun-d    { color: #e53935; }
 
+    /* ===== VIEW TOGGLE ===== */
+    .view-mode-btn {
+        background: rgba(255,255,255,0.28); border: 2px solid rgba(255,255,255,0.5);
+        color: white; font-size: 13px; font-weight: 700;
+        padding: 6px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+        letter-spacing: 0.02em;
+    }
+    .view-mode-btn.active-month { background: white; color: var(--primary); border-color: white; }
+    /* ===== UNDO BUTTON ===== */
+    .undo-btn {
+        background: rgba(255,255,255,0.18); border: 1.5px solid rgba(255,255,255,0.4);
+        color: white; font-size: 12px; font-weight: 700;
+        padding: 5px 12px; border-radius: 8px; cursor: pointer; white-space: nowrap;
+    }
+    .undo-btn:hover { background: rgba(255,255,255,0.3); }
+
+    /* ===== COPY MODE ===== */
+    .copy-banner {
+        position: sticky; left: 0;
+        background: #e3f2fd; border-bottom: 2px solid #1976d2;
+        padding: 8px 14px; display: flex; align-items: center; gap: 10px;
+        font-size: 12px; font-weight: 600; color: #0d47a1; z-index: 50;
+    }
+    .copy-banner span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .copy-cancel-btn {
+        background: none; border: 1.5px solid #1976d2; color: #1976d2;
+        padding: 2px 10px; border-radius: 10px; cursor: pointer;
+        font-size: 11px; font-weight: 700; flex: none;
+    }
+    .gantt-rows.copy-mode .time-area { cursor: copy; }
+    .res-block.is-copy-source { outline: 2px dashed white; opacity: 0.75; }
+    .btn-copy {
+        padding: 12px; background: #e3f2fd; color: #1565c0;
+        border: 2px solid #90caf9; border-radius: 5px;
+        font-size: 14px; font-weight: 700; cursor: pointer;
+    }
+
+    /* ===== MONTH VIEW ===== */
+    .month-view {
+        flex: 1; overflow: auto; min-width: 0; min-height: 0;
+        background: #ebedf0; padding: 10px;
+    }
+    .month-nav {
+        display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+    }
+    .month-nav h2 { flex: 1; text-align: center; font-size: 16px; font-weight: 700; color: var(--primary); }
+    .month-nav-btn {
+        background: var(--primary); border: none; color: white;
+        font-size: 18px; padding: 4px 14px; border-radius: 4px; cursor: pointer;
+    }
+    .month-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+    .month-dow { text-align: center; font-size: 11px; font-weight: 700; color: #888; padding: 4px 0; }
+    .month-dow.sun-d { color: #e53935; }
+    .month-dow.sat-d { color: #1565c0; }
+    .month-cell {
+        background: white; border-radius: 6px; padding: 4px;
+        min-height: 180px; cursor: pointer; transition: background 0.1s;
+    }
+    .month-cell:hover { background: #eef2ff; }
+    .month-cell.empty { background: none; cursor: default; pointer-events: none; }
+    .month-cell.today { outline: 2px solid var(--primary); }
+    .month-cell.selected-day { background: #e8eaf6; }
+    .month-day-num {
+        font-size: 11px; font-weight: 700; color: #555;
+        margin-bottom: 3px; text-align: right;
+    }
+    .month-cell.today .month-day-num {
+        background: var(--primary); color: white; border-radius: 50%;
+        width: 18px; height: 18px; display: flex; align-items: center;
+        justify-content: center; font-size: 10px; margin-left: auto;
+    }
+    .month-cell.sun-d .month-day-num:not(div) { color: #e53935; }
+    .month-cell.sat-d .month-day-num:not(div) { color: #1565c0; }
+    .month-res-item {
+        font-size: 9px; border-radius: 3px; padding: 1px 4px; margin-bottom: 2px;
+        color: white; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        line-height: 1.5;
+    }
+    .month-more { font-size: 9px; color: #999; margin-top: 1px; }
+
     @media (max-width: 640px) {
         :root { --eq-w: 80px; --row-h: 72px; }
         /* 100dvh = ブラウザUIを除いた実際の表示領域 → 縦スクロール改善 */
@@ -458,6 +564,8 @@
             </div>
         </div>
     </div>
+    <button class="undo-btn" id="undo-btn" onclick="undoLast()" title="元に戻す" style="display:none">↩ 戻す</button>
+    <button class="view-mode-btn" id="view-toggle-btn" onclick="toggleViewMode()" title="月表示に切り替え">📅 月表示</button>
     <button class="hdr-btn" onclick="openAdmin()">⚙️</button>
 </header>
 
@@ -466,6 +574,14 @@
         <div class="gantt-inner" id="gantt-inner">
             <div class="gantt-placeholder">読み込み中...</div>
         </div>
+    </div>
+    <div class="month-view" id="month-view" style="display:none">
+        <div class="month-nav">
+            <button class="month-nav-btn" onclick="changeMonth(-1)">‹</button>
+            <h2 id="month-title"></h2>
+            <button class="month-nav-btn" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="month-grid" id="month-grid"></div>
     </div>
     <div class="sidebar" id="sidebar">
         <div class="sb-title">担当者</div>
@@ -488,8 +604,11 @@
                 </select>
             </div>
             <div class="form-row">
-                <label>日付</label>
-                <input type="date" id="add-date" onchange="checkConflict()">
+                <label>日付 <span class="lbl-hint">（複数日の場合は終了日を変更）</span></label>
+                <div class="time-row">
+                    <input type="date" id="add-date"     onchange="onStartDateChange()">
+                    <input type="date" id="add-end-date" onchange="checkConflict()">
+                </div>
             </div>
             <div class="form-row">
                 <label>時間（開始 〜 終了）</label>
@@ -504,7 +623,7 @@
             </div>
             <div class="conflict-warn" id="conflict-warn"></div>
             <div class="modal-actions">
-                <button class="btn-primary" onclick="submitAdd()">予約する</button>
+                <button class="btn-primary" id="submit-add-btn" onclick="submitAdd()">予約する</button>
                 <button class="btn-cancel"  onclick="closeAdd()">キャンセル</button>
             </div>
         </div>
@@ -521,7 +640,9 @@
         <div class="modal-body">
             <div class="view-detail" id="view-detail"></div>
             <div class="modal-actions">
-                <button class="btn-danger"  onclick="deleteRes()">この予約を削除</button>
+                <button class="btn-edit"    onclick="openEdit(viewResId)">✏️ 編集</button>
+                <button class="btn-copy"    onclick="copyRes()">📋 コピー</button>
+                <button class="btn-danger"  onclick="deleteRes()">🗑 削除</button>
                 <button class="btn-cancel"  onclick="closeView()">閉じる</button>
             </div>
         </div>
@@ -562,9 +683,8 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
 <script>
-    const SUPABASE_URL = 'https://wkramctyxgdjpqueuyfp.supabase.co';
-    const SUPABASE_KEY = 'REDACTED_SUPABASE_KEY';
     const { createClient } = supabase;
     const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -582,6 +702,10 @@
     let selectedDate   = new Date();
     let addEqId   = null;
     let viewResId = null;
+    let copiedReservation = null;  // コピー中の予約オブジェクト
+    let viewMode          = 'gantt'; // 'gantt' | 'month'
+    let undoStack         = [];    // undo用スタック: {type, ...}[]
+    let editResId         = null;  // 編集中の予約ID（nullなら新規）
 
     // ===== 日付ユーティリティ =====
 
@@ -598,6 +722,11 @@
         return new Date(iso).toLocaleTimeString('ja-JP', {
             timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit'
         });
+    }
+
+    function fmtFullDate(iso) {
+        const d = toJST(new Date(iso));
+        return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
     }
 
     function isSameDay(a, b) {
@@ -635,16 +764,10 @@
     // ===== データ取得 =====
 
     async function loadAll() {
-        const from = new Date(); from.setDate(from.getDate() - 1);
-        const to   = new Date(); to.setDate(to.getDate() + 60);
-
         const [eqR, usersR, resR] = await Promise.all([
             client.from('equipment').select('*').order('display_order').order('id'),
             client.from('equipment_users').select('*').order('display_order').order('id'),
-            client.from('reservations').select('*')
-                  .gte('end_time',   from.toISOString())
-                  .lte('start_time', to.toISOString())
-                  .order('start_time')
+            client.from('reservations').select('*').order('start_time')
         ]);
         if (!eqR.error)    equipmentList  = eqR.data    ?? [];
         if (!usersR.error) equipmentUsers = usersR.data ?? [];
@@ -663,6 +786,12 @@
     }
 
     // ===== ガントチャート描画 =====
+
+    // 現在のビューモードに応じて描画（ガント or 月表示）
+    function renderCurrent() {
+        if (viewMode === 'month') renderMonth();
+        else renderGantt();
+    }
 
     function renderGantt() {
         const inner = document.getElementById('gantt-inner');
@@ -734,8 +863,9 @@
         inner.innerHTML = header +
             `<div class="gantt-rows" id="gantt-rows" style="position:relative">${rows}${nowLine}</div>`;
 
-        // アサインモードが有効なら再適用
+        // アサインモード・コピーモードが有効なら再適用
         updateAssignMode();
+        updateCopyModeUI();
     }
 
     function buildBlock(r) {
@@ -743,23 +873,55 @@
         const color = user ? user.color : '#9e9e9e';
         const name  = user ? user.name  : '(削除済)';
 
+        // 表示日の境界（JST）
+        const dayISO   = dateISO(selectedDate);
+        const dayStart = new Date(`${dayISO}T00:00:00+09:00`);
+        const dayEnd   = new Date(`${dayISO}T23:59:59+09:00`);
+
         const sJST = toJST(new Date(r.start_time));
         const eJST = toJST(new Date(r.end_time));
-        const sH   = sJST.getHours() + sJST.getMinutes() / 60;
-        const eH   = eJST.getHours() + eJST.getMinutes() / 60;
 
-        const left  = Math.max(0,          (sH - TL_S) * HR_W);
-        const right = Math.min(TOTAL_W,    (eH - TL_S) * HR_W);
+        // 前日以前から続く / 翌日以降へ続くフラグ
+        const contPrev = new Date(r.start_time) < dayStart;
+        const contNext = new Date(r.end_time)   > dayEnd;
+        const isMultiDay = contPrev || contNext;
+
+        // 表示用の時間（複数日はタイムライン端まで埋める）
+        const sH = contPrev ? TL_S : sJST.getHours() + sJST.getMinutes() / 60;
+        const eH = contNext ? TL_E : eJST.getHours() + eJST.getMinutes() / 60;
+
+        const left  = Math.max(0,       (sH - TL_S) * HR_W);
+        const right = Math.min(TOTAL_W, (eH - TL_S) * HR_W);
         const width = right - left;
         if (width < 2) return '';
 
-        const timeStr = `${fmtTime(r.start_time)}-${fmtTime(r.end_time)}`;
+        // 角丸: 前日から続く側は直角にして「つながり」を表現
+        const brL = contPrev ? '0' : '5px';
+        const brR = contNext ? '0' : '5px';
+        const styleStr = `left:${left}px;width:${width}px;background:${color};border-radius:${brL} ${brR} ${brR} ${brL}`;
+
         const showName = width > 30;
+
+        if (isMultiDay) {
+            // 複数日ブロック: ドラッグ無効・クリックで詳細表示
+            const titleStr = `${name}（${fmtFullDate(r.start_time)} 〜 ${fmtFullDate(r.end_time)}）`;
+            return `
+                <div class="res-block multi-day-block"
+                     style="${styleStr}"
+                     title="${h(titleStr)}"
+                     onclick="openView(${r.id})">
+                    ${contPrev ? '<span class="rb-cont-l">◀</span>' : ''}
+                    ${showName ? `<span class="rb-name">${h(name)}</span>` : ''}
+                    ${contNext ? '<span class="rb-cont-r">▶</span>' : ''}
+                </div>`;
+        }
+
+        const timeStr  = `${fmtTime(r.start_time)}-${fmtTime(r.end_time)}`;
         const showTime = width > 100;
 
         return `
             <div class="res-block"
-                 style="left:${left}px;width:${width}px;background:${color}"
+                 style="${styleStr}"
                  title="${h(name)} ${timeStr}（ドラッグで移動・端をドラッグで長さ変更）"
                  onmousedown="resBlockMD(event,${r.id})"
                  ontouchstart="resBlockMD(event,${r.id})">
@@ -768,6 +930,11 @@
                      ontouchstart="resHandleMD(event,${r.id},'l')"></div>
                 ${showName ? `<span class="rb-name">${h(name)}</span>` : ''}
                 ${showTime ? `<span class="rb-time">${timeStr}</span>` : ''}
+                ${width > 60 ? `<button class="rb-copy-btn"
+                     onmousedown="event.stopPropagation()"
+                     ontouchstart="event.stopPropagation()"
+                     onclick="copyReservation(${r.id})"
+                     ontouchend="copyReservation(${r.id}); event.stopPropagation()">📋</button>` : ''}
                 <div class="res-handle-r"
                      onmousedown="resHandleMD(event,${r.id},'r')"
                      ontouchstart="resHandleMD(event,${r.id},'r')"></div>
@@ -822,6 +989,14 @@
 
     function onTimeMD(e, eqId) {
         if (e.target.closest('.res-block')) return;
+
+        // コピーモード中はペースト
+        if (copiedReservation !== null) {
+            e.preventDefault();
+            pasteReservation(eqId);
+            return;
+        }
+
         e.preventDefault();
 
         const rect  = e.currentTarget.getBoundingClientRect();
@@ -838,6 +1013,13 @@
 
     function onTimeTouch(e, eqId) {
         if (e.target.closest('.res-block')) return;
+        // コピーモード中はペースト
+        if (copiedReservation !== null) {
+            e.preventDefault();
+            e.stopPropagation();
+            pasteReservation(eqId);
+            return;
+        }
         // アサインモード中のタッチ → 終日予約を作成
         if (mobileSelectedUser !== null) {
             e.preventDefault();
@@ -963,6 +1145,9 @@
     }
 
     document.addEventListener('mouseup',  () => { finishResizeDrag(); finishMoveDrag(); finishDrag(); });
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && copiedReservation !== null) { cancelCopy(); }
+    });
     document.addEventListener('touchend', e => {
         // タップで新規予約モーダルを開く（移動量 < 15px の場合）
         if (touchStartPos && touchCreateEqId !== null) {
@@ -984,6 +1169,99 @@
         openAdd(eqId, TL_S, 0, TL_E, 0);
     }
 
+    // ===== コピー & ペースト =====
+
+    function copyReservation(resId) {
+        // コピーモード中なら解除
+        if (copiedReservation !== null) { cancelCopy(); return; }
+        const r = reservations.find(x => x.id === resId);
+        if (!r) return;
+        // コピー元ブロックをハイライト
+        document.querySelectorAll('.res-block.is-copy-source').forEach(b => b.classList.remove('is-copy-source'));
+        const blocks = document.querySelectorAll('.res-block');
+        blocks.forEach(b => {
+            if (b.getAttribute('data-res-id') === String(resId)) b.classList.add('is-copy-source');
+        });
+        copiedReservation = { ...r };
+        updateCopyModeUI();
+        closeView();
+    }
+
+    // 詳細モーダルの「コピー」ボタン用
+    function copyRes() { copyReservation(viewResId); }
+
+    function cancelCopy() {
+        copiedReservation = null;
+        document.querySelectorAll('.res-block.is-copy-source').forEach(b => b.classList.remove('is-copy-source'));
+        updateCopyModeUI();
+    }
+
+    function updateCopyModeUI() {
+        const gw        = document.getElementById('gantt-wrap');
+        const ganttRows = document.getElementById('gantt-rows');
+        let   banner    = document.getElementById('copy-banner');
+
+        if (copiedReservation !== null) {
+            const eq   = equipmentList.find(e => e.id === copiedReservation.equipment_id);
+            const user = equipmentUsers.find(u => u.id === copiedReservation.user_id);
+            if (!banner) {
+                banner = document.createElement('div');
+                banner.id = 'copy-banner';
+                banner.className = 'copy-banner';
+                gw.insertBefore(banner, gw.firstChild);
+            }
+            banner.innerHTML = `
+                <span>📋 コピー中: <b>${h(eq ? eq.name : '')}</b>（${h(user ? user.name : '')}）— 貼り付け先機材の時間帯をクリック / Shift+Clickでも可</span>
+                <button class="copy-cancel-btn" onclick="cancelCopy()">✕ キャンセル</button>`;
+            if (ganttRows) ganttRows.classList.add('copy-mode');
+        } else {
+            if (banner) banner.remove();
+            if (ganttRows) ganttRows.classList.remove('copy-mode');
+        }
+    }
+
+    async function pasteReservation(eqId) {
+        const r = copiedReservation;
+        if (!r) return;
+
+        if (r.equipment_id === eqId) {
+            alert('同じ機材にはコピーできません。別の機材の時間帯をクリックしてください。');
+            return;
+        }
+
+        // 選択日付に同じ開始時刻・同じ長さでペースト
+        const origStartJST = toJST(new Date(r.start_time));
+        const dur  = new Date(r.end_time) - new Date(r.start_time);
+        const dateStr = dateISO(selectedDate);
+        const newS = new Date(`${dateStr}T${pad(origStartJST.getHours())}:${pad(origStartJST.getMinutes())}:00+09:00`);
+        const newE = new Date(newS.getTime() + dur);
+
+        const conflict = reservations.find(x =>
+            x.equipment_id === eqId &&
+            newS < new Date(x.end_time) &&
+            newE > new Date(x.start_time)
+        );
+        if (conflict) {
+            const cu = equipmentUsers.find(u => u.id === conflict.user_id);
+            alert(`この時間帯は${cu ? cu.name + 'さんの' : ''}予約と重複します`);
+            return;
+        }
+
+        const { data, error } = await client.from('reservations').insert({
+            equipment_id: eqId,
+            user_id:      r.user_id,
+            start_time:   newS.toISOString(),
+            end_time:     newE.toISOString(),
+            purpose:      r.purpose || ''
+        }).select();
+        if (error) { alert('登録に失敗しました: ' + error.message); return; }
+        if (data && data[0]) { undoStack.push({ type: 'created', id: data[0].id }); updateUndoBtn(); }
+
+        cancelCopy();
+        await loadAll();
+        renderCurrent();
+    }
+
     // ===== 既存予約ブロックのリサイズ =====
 
     function resHandleMD(e, resId, edge) {
@@ -999,6 +1277,8 @@
         resizeDrag = {
             resId, edge,
             origStartMins, origEndMins,
+            origStartTime: r.start_time,  // undo用
+            origEndTime:   r.end_time,    // undo用
             dragStartX: getClientX(e),
             currentDx:  0,
             hasMoved:   false,
@@ -1053,7 +1333,12 @@
             end_time:   newE.toISOString()
         }).eq('id', rd.resId);
 
-        if (error) { alert('更新に失敗しました: ' + error.message); }
+        if (error) { alert('更新に失敗しました: ' + error.message); return; }
+        const oldR = reservations.find(x => x.id === rd.resId);
+        undoStack.push({ type: 'updated', id: rd.resId,
+            old: { user_id: oldR?.user_id, start_time: rd.origStartTime,
+                   end_time: rd.origEndTime, purpose: oldR?.purpose } });
+        updateUndoBtn();
         await loadAll(); renderGantt();
     }
 
@@ -1061,6 +1346,13 @@
 
     function resBlockMD(e, resId) {
         e.stopPropagation();  // onTimeMD（新規ドラッグ）を発火させない
+
+        // Shift+Click → コピーモードに入る
+        if (e.shiftKey) { copyReservation(resId); return; }
+
+        // コピーモード中はブロッククリックを無視（time-areaへのクリックで貼り付け）
+        if (copiedReservation !== null) return;
+
         const r = reservations.find(x => x.id === resId);
         if (!r) return;
 
@@ -1086,15 +1378,15 @@
         const md = moveDrag;
         moveDrag = null;
 
-        // 外観を元に戻す
         md.block.classList.remove('is-moving');
-        md.block.style.left = '';  // renderGantt で再計算
 
         if (!md.hasMoved) {
-            // クリックとして処理 → 詳細モーダルを開く
+            // クリックとして処理 → 詳細モーダルを開く（style.leftは変えない）
             openView(md.resId);
             return;
         }
+
+        md.block.style.left = '';  // 移動した場合のみ renderGantt で再計算
 
         // 新しい開始・終了時刻を計算（15分スナップ済み）
         const deltaMins    = Math.round(md.currentDx / HR_W * 60 / 15) * 15;
@@ -1123,12 +1415,17 @@
             return;
         }
 
+        const oldR = reservations.find(x => x.id === md.resId);
         const { error } = await client.from('reservations').update({
             start_time: newS.toISOString(),
             end_time:   newE.toISOString()
         }).eq('id', md.resId);
 
-        if (error) { alert('更新に失敗しました: ' + error.message); }
+        if (error) { alert('更新に失敗しました: ' + error.message); return; }
+        undoStack.push({ type: 'updated', id: md.resId,
+            old: { user_id: oldR?.user_id, start_time: oldR?.start_time,
+                   end_time: oldR?.end_time, purpose: oldR?.purpose } });
+        updateUndoBtn();
         await loadAll(); renderGantt();
     }
 
@@ -1146,7 +1443,8 @@
             sel.innerHTML += `<option value="${u.id}">${h(u.name)}</option>`;
         });
 
-        document.getElementById('add-date').value  = dateISO(selectedDate);
+        document.getElementById('add-date').value     = dateISO(selectedDate);
+        document.getElementById('add-end-date').value = dateISO(selectedDate);
         document.getElementById('add-start').value = `${pad(sh)}:${pad(sm)}`;
         document.getElementById('add-end').value   = `${pad(eh)}:${pad(em)}`;
         document.getElementById('add-purpose').value = '';
@@ -1158,20 +1456,35 @@
 
     function closeAdd() {
         document.getElementById('add-overlay').classList.remove('active');
-        addEqId = null;
+        addEqId   = null;
+        editResId = null;
+        document.getElementById('submit-add-btn').textContent = '予約する';
+        document.getElementById('add-title').textContent      = '予約を追加';
+    }
+
+    function onStartDateChange() {
+        const startDate = document.getElementById('add-date').value;
+        const endDate   = document.getElementById('add-end-date').value;
+        // 終了日が開始日より前なら終了日を開始日に合わせる
+        if (!endDate || endDate < startDate) {
+            document.getElementById('add-end-date').value = startDate;
+        }
+        checkConflict();
     }
 
     function checkConflict() {
         if (!addEqId) return;
-        const dateStr  = document.getElementById('add-date').value;
-        const startStr = document.getElementById('add-start').value;
-        const endStr   = document.getElementById('add-end').value;
-        const warn     = document.getElementById('conflict-warn');
+        const startDate = document.getElementById('add-date').value;
+        const endDate   = document.getElementById('add-end-date').value || startDate;
+        const startStr  = document.getElementById('add-start').value;
+        const endStr    = document.getElementById('add-end').value;
+        const warn      = document.getElementById('conflict-warn');
 
-        if (!dateStr || !startStr || !endStr) { warn.style.display = 'none'; return; }
+        if (!startDate || !startStr || !endStr) { warn.style.display = 'none'; return; }
 
-        const newS = new Date(`${dateStr}T${startStr}:00+09:00`);
-        const newE = new Date(`${dateStr}T${endStr}:00+09:00`);
+        const actualEnd = endDate >= startDate ? endDate : startDate;
+        const newS = new Date(`${startDate}T${startStr}:00+09:00`);
+        const newE = new Date(`${actualEnd}T${endStr}:00+09:00`);
 
         if (newE <= newS) {
             warn.textContent = '⚠️ 終了は開始より後にしてください';
@@ -1180,14 +1493,21 @@
 
         const conflicts = reservations.filter(r =>
             r.equipment_id === addEqId &&
+            (editResId === null || r.id !== editResId) &&
             newS < new Date(r.end_time) &&
             newE > new Date(r.start_time)
         );
 
         if (conflicts.length > 0) {
             const detail = conflicts.map(r => {
-                const u = equipmentUsers.find(x => x.id === r.user_id);
-                return `${u ? u.name : '?'}（${fmtTime(r.start_time)}〜${fmtTime(r.end_time)}）`;
+                const u  = equipmentUsers.find(x => x.id === r.user_id);
+                const sD = toJST(new Date(r.start_time));
+                const eD = toJST(new Date(r.end_time));
+                const sameDay = dateISO(sD) === dateISO(eD);
+                const range = sameDay
+                    ? `${fmtTime(r.start_time)}〜${fmtTime(r.end_time)}`
+                    : `${fmtFullDate(r.start_time)}〜${fmtFullDate(r.end_time)}`;
+                return `${u ? u.name : '?'}（${range}）`;
             }).join('、');
             warn.innerHTML = `⚠️ 重複があります：${detail}`;
             warn.style.display = 'block';
@@ -1197,39 +1517,61 @@
     }
 
     async function submitAdd() {
-        const userId   = document.getElementById('add-user').value;
-        const dateStr  = document.getElementById('add-date').value;
-        const startStr = document.getElementById('add-start').value;
-        const endStr   = document.getElementById('add-end').value;
-        const purpose  = document.getElementById('add-purpose').value.trim();
+        const userId    = document.getElementById('add-user').value;
+        const startDate = document.getElementById('add-date').value;
+        const endDate   = document.getElementById('add-end-date').value || startDate;
+        const startStr  = document.getElementById('add-start').value;
+        const endStr    = document.getElementById('add-end').value;
+        const purpose   = document.getElementById('add-purpose').value.trim();
 
         if (!userId)   { alert('担当者を選択してください'); return; }
-        if (!dateStr || !startStr || !endStr) { alert('日付と時間を入力してください'); return; }
+        if (!startDate || !startStr || !endStr) { alert('日付と時間を入力してください'); return; }
 
-        const newS = new Date(`${dateStr}T${startStr}:00+09:00`);
-        const newE = new Date(`${dateStr}T${endStr}:00+09:00`);
-
+        const actualEnd = endDate >= startDate ? endDate : startDate;
+        const newS = new Date(`${startDate}T${startStr}:00+09:00`);
+        const newE = new Date(`${actualEnd}T${endStr}:00+09:00`);
         if (newE <= newS) { alert('終了は開始より後にしてください'); return; }
 
         const hasConflict = reservations.some(r =>
             r.equipment_id === addEqId &&
+            (editResId === null || r.id !== editResId) &&
             newS < new Date(r.end_time) &&
             newE > new Date(r.start_time)
         );
         if (hasConflict) { alert('この時間帯はすでに予約が入っています'); return; }
 
-        const { error } = await client.from('reservations').insert({
-            equipment_id: addEqId,
-            user_id:      parseInt(userId),
-            start_time:   newS.toISOString(),
-            end_time:     newE.toISOString(),
-            purpose
-        });
-        if (error) { alert('登録に失敗しました: ' + error.message); return; }
+        if (editResId !== null) {
+            // ===== 編集モード =====
+            const oldRes = reservations.find(x => x.id === editResId);
+            const { error } = await client.from('reservations').update({
+                user_id:    parseInt(userId),
+                start_time: newS.toISOString(),
+                end_time:   newE.toISOString(),
+                purpose
+            }).eq('id', editResId);
+            if (error) { alert('更新に失敗しました: ' + error.message); return; }
+            if (oldRes) {
+                undoStack.push({ type: 'updated', id: editResId,
+                    old: { user_id: oldRes.user_id, start_time: oldRes.start_time,
+                           end_time: oldRes.end_time, purpose: oldRes.purpose } });
+                updateUndoBtn();
+            }
+        } else {
+            // ===== 新規作成モード =====
+            const { data, error } = await client.from('reservations').insert({
+                equipment_id: addEqId,
+                user_id:      parseInt(userId),
+                start_time:   newS.toISOString(),
+                end_time:     newE.toISOString(),
+                purpose
+            }).select();
+            if (error) { alert('登録に失敗しました: ' + error.message); return; }
+            if (data && data[0]) { undoStack.push({ type: 'created', id: data[0].id }); updateUndoBtn(); }
+        }
 
         closeAdd();
         await loadAll();
-        renderGantt();
+        renderCurrent();
     }
 
     // ===== 予約詳細モーダル =====
@@ -1249,7 +1591,13 @@
                 <div class="vd-dot" style="background:${user ? user.color : '#9e9e9e'}"></div>
                 <div class="vd-name">${h(user ? user.name : '(削除済)')}</div>
             </div>
-            <div class="vd-time">${fmtTime(r.start_time)} 〜 ${fmtTime(r.end_time)}</div>
+            <div class="vd-time">${(() => {
+                const sD = toJST(new Date(r.start_time));
+                const eD = toJST(new Date(r.end_time));
+                return dateISO(sD) === dateISO(eD)
+                    ? `${fmtTime(r.start_time)} 〜 ${fmtTime(r.end_time)}`
+                    : `${fmtFullDate(r.start_time)} 〜 ${fmtFullDate(r.end_time)}`;
+            })()}</div>
             ${r.purpose ? `<div class="vd-purpose">「${h(r.purpose)}」</div>` : ''}`;
 
         document.getElementById('view-overlay').classList.add('active');
@@ -1260,16 +1608,85 @@
         viewResId = null;
     }
 
+    // ===== Undo =====
+
+    function updateUndoBtn() {
+        const btn = document.getElementById('undo-btn');
+        if (!btn) return;
+        const n = undoStack.length;
+        btn.style.display = n ? '' : 'none';
+        btn.textContent   = n > 1 ? `↩ 戻す (${n})` : '↩ 戻す';
+    }
+
+    async function undoLast() {
+        if (!undoStack.length) return;
+        const action = undoStack.pop();
+        updateUndoBtn();
+
+        if (action.type === 'created') {
+            await client.from('reservations').delete().eq('id', action.id);
+        } else if (action.type === 'deleted') {
+            const { equipment_id, user_id, start_time, end_time, purpose } = action.row;
+            await client.from('reservations').insert({ equipment_id, user_id, start_time, end_time, purpose });
+        } else if (action.type === 'updated') {
+            await client.from('reservations').update({
+                user_id:    action.old.user_id,
+                start_time: action.old.start_time,
+                end_time:   action.old.end_time,
+                purpose:    action.old.purpose
+            }).eq('id', action.id);
+        }
+        await loadAll();
+        renderCurrent();
+    }
+
+    // ===== 予約編集 =====
+
+    function openEdit(resId) {
+        const r = reservations.find(x => x.id === resId);
+        if (!r) return;
+        closeView();
+
+        editResId = resId;
+        addEqId   = r.equipment_id;
+        const eq  = equipmentList.find(e => e.id === r.equipment_id);
+        document.getElementById('add-title').textContent = `✏️ ${eq ? (eq.emoji || '📦') + ' ' + eq.name : ''} の予約を編集`;
+
+        const sel = document.getElementById('add-user');
+        sel.innerHTML = '<option value="">-- 担当者を選択 --</option>';
+        equipmentUsers.forEach(u => {
+            sel.innerHTML += `<option value="${u.id}"${u.id === r.user_id ? ' selected' : ''}>${h(u.name)}</option>`;
+        });
+
+        const sJST = toJST(new Date(r.start_time));
+        const eJST = toJST(new Date(r.end_time));
+        document.getElementById('add-date').value     = dateISO(sJST);
+        document.getElementById('add-end-date').value = dateISO(eJST);
+        document.getElementById('add-start').value    = `${pad(sJST.getHours())}:${pad(sJST.getMinutes())}`;
+        document.getElementById('add-end').value      = `${pad(eJST.getHours())}:${pad(eJST.getMinutes())}`;
+        document.getElementById('add-purpose').value  = r.purpose || '';
+        document.getElementById('conflict-warn').style.display = 'none';
+        document.getElementById('submit-add-btn').textContent  = '更新する';
+
+        document.getElementById('add-overlay').classList.add('active');
+        checkConflict();
+    }
+
     async function deleteRes() {
         if (!viewResId) return;
         const r    = reservations.find(x => x.id === viewResId);
         const user = r ? equipmentUsers.find(u => u.id === r.user_id) : null;
         if (!confirm(`${user ? user.name + 'さんの' : ''}予約を削除しますか？`)) return;
+        if (r) {
+            undoStack.push({ type: 'deleted', row: { equipment_id: r.equipment_id, user_id: r.user_id,
+                start_time: r.start_time, end_time: r.end_time, purpose: r.purpose } });
+        }
         const { error } = await client.from('reservations').delete().eq('id', viewResId);
         if (error) { alert('削除に失敗しました'); return; }
+        updateUndoBtn();
         closeView();
         await loadAll();
-        renderGantt();
+        renderCurrent();
     }
 
     // ===== 管理パネル =====
@@ -1514,6 +1931,109 @@
             `<div class="sb-hint">${mobileSelectedUser !== null ? '▼機材行をタップ' : 'PCはドラッグ<br>スマホはタップ→行タップ'}</div>`;
     }
 
+    // ===== 月表示 =====
+
+    function toggleViewMode() {
+        viewMode = (viewMode === 'gantt') ? 'month' : 'gantt';
+        const btn = document.getElementById('view-toggle-btn');
+        const gw  = document.getElementById('gantt-wrap');
+        const mv  = document.getElementById('month-view');
+        const sb  = document.getElementById('sidebar');
+
+        if (viewMode === 'month') {
+            btn.textContent = '📊 ガント';
+            btn.classList.add('active-month');
+            gw.style.display  = 'none';
+            mv.style.display  = '';
+            sb.style.display  = 'none';
+            cancelCopy();
+            renderMonth();
+        } else {
+            btn.textContent = '📅 月';
+            btn.classList.remove('active-month');
+            gw.style.display = '';
+            mv.style.display = 'none';
+            sb.style.display = '';
+            renderGantt();
+        }
+    }
+
+    function renderMonth() {
+        const jst   = toJST(selectedDate);
+        const year  = jst.getFullYear();
+        const month = jst.getMonth();
+        document.getElementById('month-title').textContent = `${year}年${month + 1}月`;
+
+        const dows     = ['日','月','火','水','木','金','土'];
+        const dowClass = ['sun-d','','','','','','sat-d'];
+        let html = dows.map((d, i) =>
+            `<div class="month-dow ${dowClass[i]}">${d}</div>`
+        ).join('');
+
+        const firstDay = new Date(year, month, 1);
+        const lastDay  = new Date(year, month + 1, 0);
+        const today    = getNow();
+
+        // 月の初日が何曜日か → 先頭に空白セルを入れる
+        for (let i = 0; i < firstDay.getDay(); i++) {
+            html += `<div class="month-cell empty"></div>`;
+        }
+
+        for (let d = 1; d <= lastDay.getDate(); d++) {
+            const date   = new Date(year, month, d, 12);
+            const isToday = isSameDay(date, today);
+            const isSel   = isSameDay(date, selectedDate);
+            const dow     = date.getDay();
+            const dowCls  = dow === 0 ? 'sun-d' : dow === 6 ? 'sat-d' : '';
+
+            const eqsWithRes = equipmentList.filter(eq => getResForDate(eq.id, date).length > 0);
+
+            let dayNumHtml;
+            if (isToday) {
+                dayNumHtml = `<div class="month-day-num"><span style="background:var(--primary);color:white;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px">${d}</span></div>`;
+            } else {
+                const numColor = dow === 0 ? '#e53935' : dow === 6 ? '#1565c0' : '#555';
+                dayNumHtml = `<div class="month-day-num" style="color:${numColor}">${d}</div>`;
+            }
+
+            const MAX_SHOW = 4;
+            let itemsHtml = eqsWithRes.slice(0, MAX_SHOW).map(eq => {
+                const dayRes    = getResForDate(eq.id, date);
+                const firstUser = equipmentUsers.find(u => u.id === dayRes[0].user_id);
+                const color     = firstUser ? firstUser.color : '#9e9e9e';
+                return `<div class="month-res-item" style="background:${color}" title="${h(eq.name)}">${h(eq.emoji || '')} ${h(eq.name)}</div>`;
+            }).join('');
+            if (eqsWithRes.length > MAX_SHOW) {
+                itemsHtml += `<div class="month-more">+${eqsWithRes.length - MAX_SHOW} 件</div>`;
+            }
+
+            const classes = ['month-cell', dowCls, isToday ? 'today' : '', isSel ? 'selected-day' : '']
+                .filter(Boolean).join(' ');
+            html += `<div class="${classes}" onclick="selectDayFromMonth(${year},${month},${d})">${dayNumHtml}${itemsHtml}</div>`;
+        }
+
+        document.getElementById('month-grid').innerHTML = html;
+    }
+
+    function changeMonth(delta) {
+        selectedDate = new Date(selectedDate);
+        selectedDate.setMonth(selectedDate.getMonth() + delta);
+        renderMonth();
+    }
+
+    function selectDayFromMonth(year, month, day) {
+        selectedDate = new Date(year, month, day, 12, 0, 0);
+        document.getElementById('dn-date').textContent = displayDate(selectedDate);
+        viewMode = 'gantt';
+        const btn = document.getElementById('view-toggle-btn');
+        btn.textContent = '📅 月';
+        btn.classList.remove('active-month');
+        document.getElementById('gantt-wrap').style.display  = '';
+        document.getElementById('month-view').style.display  = 'none';
+        document.getElementById('sidebar').style.display     = '';
+        renderGantt();
+    }
+
     // アサインモードの表示制御（バナー + gantt-rows クラス）
     function updateAssignMode() {
         const ganttRows = document.getElementById('gantt-rows');
@@ -1621,13 +2141,13 @@
 
     client.channel('gantt-v3')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'reservations' }, async () => {
-            await loadAll(); renderGantt();
+            await loadAll(); renderCurrent();
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'equipment' }, async () => {
-            await loadAll(); renderGantt();
+            await loadAll(); renderCurrent();
         })
         .on('postgres_changes', { event: '*', schema: 'public', table: 'equipment_users' }, async () => {
-            await loadAll(); renderGantt(); renderSidebar();
+            await loadAll(); renderCurrent(); renderSidebar();
         })
         .subscribe();
 
