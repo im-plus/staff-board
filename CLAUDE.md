@@ -23,13 +23,21 @@
 
 | ファイル | 役割 | リポジトリ管理 |
 |---|---|---|
-| `index.html` | スタッフステータスボード UI | ✅ |
-| `equipment.html` | 機材予約ガントチャート UI | ✅ |
+| `index.html` | スタッフステータスボード UI（**このリポジトリの主機能**） | ✅ |
+| `equipment.html` | 機材予約ガントチャート UI（⚠️ **ミラー**、後述） | ✅ |
 | `config.js` | Supabase 接続情報（URL + publishable key） | ✅（2026-04-24〜） |
 | `config.example.js` | 設定サンプル | ✅ |
 | `.gitignore` | （現在は空） | ✅ |
 | `jobcan-sync.py` | ジョブカン打刻→Supabase同期スクリプト | ❌ untracked（後述） |
 | `CLAUDE.md` | このドキュメント | ✅ |
+
+### equipment.html はミラー（重要）
+
+`equipment.html` は [im-plus/equipment-reservation](https://github.com/im-plus/equipment-reservation) リポジトリの `index.html` と**同一コードの複製**。本番運用は `https://equipment-reservation.vercel.app/` 側を使用しているため、このリポジトリの `equipment.html` は**廃止候補**。
+
+- **機能追加・修正は `equipment-reservation` 側を先に行う**
+- 必要ならこのリポジトリにも同期する（ただし二重管理になるため、将来的にはどちらかに統一推奨）
+- `staff-board-pearl.vercel.app/equipment.html` のURLは動作するが、bookmark推奨先は `equipment-reservation.vercel.app`
 
 ---
 
