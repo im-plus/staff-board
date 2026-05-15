@@ -9,297 +9,226 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
-            background: #F9F9F7;
+            background: #F5F5F3;
             min-height: 100vh;
             color: #333;
         }
 
         header {
             background: #FFFFFF;
-            padding: 20px 24px;
-            text-align: center;
-            position: relative;
-            border-bottom: 1px solid #eee;
+            padding: 14px 0;
+            border-bottom: 1px solid #E8E8E6;
+        }
+        .header-inner {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        header h1 {
-            font-size: 20px;
-            font-weight: 700;
-            color: #333;
-            letter-spacing: 0.5px;
-        }
+        header h1 { font-size: 17px; font-weight: 600; color: #333; }
 
-        header p {
-            font-size: 12px;
-            color: #888;
-            margin-top: 4px;
-        }
+        .header-right { display: flex; align-items: center; gap: 12px; }
+
+        #last-update { font-size: 11px; color: #aaa; }
 
         .admin-btn {
-            position: absolute;
-            right: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #F9F9F7;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            color: #888;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 6px 10px;
-            transition: background 0.15s;
+            background: #F5F5F3; border: 1px solid #E8E8E6; border-radius: 6px;
+            color: #888; font-size: 15px; cursor: pointer; padding: 5px 8px;
+            transition: background 0.15s; line-height: 1;
         }
-
         .admin-btn:hover { background: #eee; }
 
-        .container {
-            max-width: 720px;
-            margin: 0 auto;
-            padding: 20px 16px;
+        .col-toggle { display: flex; gap: 2px; background: #EEECEA; border-radius: 6px; padding: 2px; }
+        .col-toggle button {
+            background: transparent; border: none; border-radius: 4px;
+            padding: 4px 8px; font-size: 12px; font-weight: 600; color: #999;
+            cursor: pointer; transition: all 0.15s; line-height: 1;
+        }
+        .col-toggle button.active { background: #fff; color: #333; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 16px 24px 32px; }
+
+        .member-list { display: flex; flex-direction: column; gap: 12px; }
+        .member-list.two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+        .member-list.two-col .off-section { grid-column: 1 / -1; }
+        @media (max-width: 520px) {
+            .member-list.two-col { grid-template-columns: 1fr; }
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 14px;
-        }
+        /* アクティブ側のバーはコンテナ幅いっぱい */
 
-        @media (max-width: 640px) {
-            .grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        .member-card {
-            background: #FFFFFF;
-            border-radius: 8px;
-            padding: 0;
-            text-align: center;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            transition: transform 0.15s, box-shadow 0.15s;
+        /* --- Member row --- */
+        .member-row {
+            display: flex;
+            align-items: center;
+            border-radius: 10px;
             overflow: hidden;
-            position: relative;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+        .member-row:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.1); }
+        .member-row:active { transform: scale(0.99); }
+
+        .row-body {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 22px;
+            min-width: 0;
         }
 
-        .member-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+        .row-name {
+            font-size: 28px;
+            font-weight: 600;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .member-card:active { transform: scale(0.98); }
-
-        .status-bar {
-            height: 6px;
-            width: 100%;
+        .row-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
         }
 
-        .card-content {
-            padding: 18px 12px 14px;
+        .row-status {
+            font-size: 20px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.85);
+            white-space: nowrap;
         }
 
-        .member-name {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 4px;
+        .row-time {
+            font-size: 11px;
+            color: rgba(255,255,255,0.45);
+            white-space: nowrap;
         }
 
-        .member-name-en {
-            font-size: 0.7rem;
-            color: #aaa;
-            font-weight: 400;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
+        /* --- 不在 (OFF) --- */
+        .member-row.is-off {
+            background: #DDDCD9 !important;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+        .member-row.is-off:hover { transform: none; box-shadow: none; }
+        .member-row.is-off .row-name { color: #333; }
+        .member-row.is-off .row-status { color: #999; }
+        .member-row.is-off .row-time { color: #bbb; }
+
+        /* --- 不在セクション（背景で囲む） --- */
+        .off-section {
+            background: #E8E7E4;
+            border-radius: 14px;
+            padding: 16px 20px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
-        .status-badge {
-            display: inline-block;
-            padding: 8px 18px;
-            border-radius: 20px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: white;
+        .off-section-label {
+            font-size: 20px;
+            font-weight: 600;
+            color: #999;
+            letter-spacing: 4px;
+            text-align: center;
+            padding-bottom: 8px;
         }
 
-        .updated-time {
-            font-size: 0.7rem;
-            color: #888;
-            margin-top: 10px;
-            text-align: right;
-            padding-right: 4px;
-        }
+        /* 時刻非表示モード */
+        .hide-time .row-time { display: none; }
 
-        /* 共通モーダル */
+        /* --- ステータス変更モーダル --- */
         .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
+            display: none; position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
             background: rgba(0,0,0,0.3);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
+            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            z-index: 100; align-items: center; justify-content: center;
         }
-
         .modal-overlay.active { display: flex; }
 
-        /* ステータス変更モーダル */
         .modal {
-            background: #FFFFFF;
-            border-radius: 12px;
-            padding: 28px 24px;
-            width: 300px;
-            text-align: center;
+            background: #FFFFFF; border-radius: 12px;
+            padding: 28px 24px; width: 300px; text-align: center;
             box-shadow: 0 20px 40px rgba(0,0,0,0.12);
         }
-
-        .modal h2 {
-            font-size: 18px;
-            margin-bottom: 20px;
-            color: #333;
-            font-weight: 700;
-        }
+        .modal h2 { font-size: 18px; margin-bottom: 20px; color: #333; font-weight: 600; }
 
         .status-buttons { display: flex; flex-direction: column; gap: 10px; }
 
         .status-btn {
-            height: 56px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            color: white;
-            transition: transform 0.1s, filter 0.1s;
+            height: 56px; border: none; border-radius: 8px;
+            font-size: 16px; font-weight: 600; cursor: pointer;
+            color: white; transition: transform 0.1s, filter 0.1s;
         }
-
         .status-btn:hover { filter: brightness(0.95); }
         .status-btn:active { transform: scale(0.97); }
 
         .cancel-btn {
-            margin-top: 10px;
-            padding: 12px;
-            width: 100%;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background: #FFFFFF;
-            color: #888;
-            font-size: 14px;
-            cursor: pointer;
-            font-weight: 600;
+            margin-top: 10px; padding: 12px; width: 100%;
+            border: 1px solid #ddd; border-radius: 8px; background: #FFFFFF;
+            color: #888; font-size: 14px; cursor: pointer; font-weight: 600;
             transition: background 0.1s;
         }
-
         .cancel-btn:hover { background: #f5f5f5; }
 
-        /* 管理モーダル */
+        /* --- 管理モーダル --- */
         .admin-modal {
-            background: #FFFFFF;
-            border-radius: 12px;
-            width: 360px;
-            max-height: 85vh;
-            overflow-y: auto;
+            background: #FFFFFF; border-radius: 12px; width: 360px;
+            max-height: 85vh; overflow-y: auto;
             box-shadow: 0 20px 40px rgba(0,0,0,0.12);
         }
-
         .admin-modal-header {
-            background: #333;
-            color: white;
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            background: #333; color: white; padding: 16px 20px;
+            display: flex; justify-content: space-between; align-items: center;
             border-radius: 12px 12px 0 0;
         }
-
         .admin-modal-header h2 { font-size: 15px; font-weight: 700; }
-
         .close-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            opacity: 0.7;
-            transition: opacity 0.1s;
+            background: none; border: none; color: white; font-size: 18px;
+            cursor: pointer; opacity: 0.7; transition: opacity 0.1s;
         }
-
         .close-btn:hover { opacity: 1; }
 
         .admin-section { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; }
         .admin-section h3 { font-size: 13px; font-weight: 700; color: #333; margin-bottom: 12px; }
-
         .admin-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-
         .admin-list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            background: #F9F9F7;
-            border-radius: 6px;
-            font-size: 13px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 12px; background: #F9F9F7; border-radius: 6px; font-size: 13px;
         }
-
         .admin-list-item .item-info { display: flex; align-items: center; gap: 8px; }
-
         .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-
         .delete-btn {
-            background: none;
-            color: #E91E63;
-            border: 1px solid #E91E63;
-            border-radius: 4px;
-            padding: 3px 8px;
-            font-size: 11px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background 0.1s, color 0.1s;
+            background: none; color: #E91E63; border: 1px solid #E91E63;
+            border-radius: 4px; padding: 3px 8px; font-size: 11px;
+            cursor: pointer; font-weight: 600; transition: background 0.1s, color 0.1s;
         }
-
         .delete-btn:hover { background: #E91E63; color: white; }
-
         .add-form { display: flex; gap: 6px; }
-
         .add-form input {
-            flex: 1;
-            padding: 8px 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 13px;
-            outline: none;
-            transition: border-color 0.1s;
+            flex: 1; padding: 8px 10px; border: 1px solid #ddd;
+            border-radius: 6px; font-size: 13px; outline: none;
         }
-
         .add-form input:focus { border-color: #333; }
-
         .add-btn {
-            background: #333;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 8px 14px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.1s;
+            background: #333; color: white; border: none; border-radius: 6px;
+            padding: 8px 14px; font-size: 13px; font-weight: 700;
+            cursor: pointer; transition: background 0.1s;
         }
-
         .add-btn:hover { background: #555; }
-
         .status-add-form { display: flex; flex-direction: column; gap: 8px; }
-
         .status-add-form input {
-            padding: 8px 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 13px;
-            outline: none;
+            padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; outline: none;
         }
-
         .status-add-form input:focus { border-color: #333; }
-
         .color-row { display: flex; gap: 6px; align-items: center; }
         .color-row label { font-size: 11px; color: #888; white-space: nowrap; }
         .color-row input[type="color"] { width: 36px; height: 30px; padding: 2px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
@@ -310,13 +239,20 @@
 <body>
 
 <header>
-    <h1>スタッフボード</h1>
-    <p id="last-update">読み込み中...</p>
-    <button class="admin-btn" onclick="openAdmin()">⚙️</button>
+    <div class="header-inner">
+        <h1>スタッフボード</h1>
+        <div class="header-right">
+            <div class="col-toggle">
+                <button id="col1-btn" class="active" onclick="setColumns(1)">1列</button>
+                <button id="col2-btn" onclick="setColumns(2)">2列</button>
+            </div>
+            <button class="admin-btn" onclick="openAdmin()">管理</button>
+        </div>
+    </div>
 </header>
 
 <div class="container">
-    <div class="grid" id="members-grid">
+    <div class="member-list" id="members-list">
         <div class="loading">読み込み中...</div>
     </div>
 </div>
@@ -334,11 +270,18 @@
 <div class="modal-overlay" id="admin-modal">
     <div class="admin-modal">
         <div class="admin-modal-header">
-            <h2>⚙️ 管理</h2>
+            <h2>管理</h2>
             <button class="close-btn" onclick="closeAdmin()">✕</button>
         </div>
         <div class="admin-section">
-            <h3>👥 メンバー管理</h3>
+            <h3>表示設定</h3>
+            <div class="admin-list-item">
+                <span>更新時刻を表示</span>
+                <button id="time-toggle" class="add-btn" onclick="toggleTime()">ON</button>
+            </div>
+        </div>
+        <div class="admin-section">
+            <h3>メンバー管理</h3>
             <div class="admin-list" id="member-list"></div>
             <div class="add-form">
                 <input type="text" id="new-member-name" placeholder="名前を入力" maxlength="10">
@@ -346,45 +289,54 @@
             </div>
         </div>
         <div class="admin-section">
-            <h3>🏷️ ステータス管理</h3>
+            <h3>ステータス管理</h3>
             <div class="admin-list" id="status-list"></div>
-            <div class="status-add-form">
-                <input type="text" id="new-status-name" placeholder="ステータス名（例：会議中）" maxlength="10">
-                <input type="text" id="new-status-emoji" placeholder="絵文字（例：📅）" maxlength="2">
+            <div class="status-add-form" id="status-add-area">
+                <input type="text" id="new-status-name" placeholder="ステータス名（2文字推奨）" maxlength="10">
                 <div class="color-row">
-                    <label>バッジ色</label>
-                    <input type="color" id="new-status-color" value="#2196f3">
-                    <label>背景色</label>
-                    <input type="color" id="new-status-bgcolor" value="#e3f2fd">
+                    <label>バーの色</label>
+                    <input type="color" id="new-status-color" value="#6366F1">
                 </div>
                 <button class="add-btn" onclick="addStatus()">ステータスを追加</button>
             </div>
+            <p id="status-limit-msg" style="font-size:11px;color:#aaa;margin-top:8px;display:none;">ステータスは最大6個までです</p>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="config.js"></script>
+<script>
+// Supabase 接続設定（config.js インライン化）
+const SUPABASE_URL = 'https://ehitufdlbrrjpyivrfod.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_6wwEDm9e6BI4wIp3Qw2bQA_qRQHkLI_';
+</script>
+<script src="config.js" onerror=""></script>
 <script>
     const { createClient } = supabase;
     const client = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let selectedMemberId = null;
     let members = [];
     let statuses = [];
+    let columnMode = 1;
 
+    const OFF_STATUS = '休み';
 
-    // 動的CSSを生成
-    function applyStatusStyles() {
-        const existing = document.getElementById('dynamic-styles');
-        if (existing) existing.remove();
-        const style = document.createElement('style');
-        style.id = 'dynamic-styles';
-        style.textContent = statuses.map(s => `
-            .bar-${CSS.escape(s.name)} { background: ${s.color}; }
-            .badge-${CSS.escape(s.name)} { background: ${s.color}; }
-        `).join('');
-        document.head.appendChild(style);
+    function isOff(member) { return member.status === OFF_STATUS; }
+
+    function setColumns(n) {
+        columnMode = n;
+        document.getElementById('col1-btn').classList.toggle('active', n === 1);
+        document.getElementById('col2-btn').classList.toggle('active', n === 2);
+        document.getElementById('members-list').classList.toggle('two-col', n === 2);
+    }
+
+    let showTime = true;
+    function toggleTime() {
+        showTime = !showTime;
+        document.getElementById('members-list').classList.toggle('hide-time', !showTime);
+        const btn = document.getElementById('time-toggle');
+        btn.textContent = showTime ? 'ON' : 'OFF';
+        btn.style.background = showTime ? '#333' : '#bbb';
     }
 
     async function loadMembers() {
@@ -392,50 +344,80 @@
         if (error) { console.error(error); return; }
         members = data;
         renderMembers();
-        const now = new Date();
-        document.getElementById('last-update').textContent =
-            `最終更新: ${now.toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit' })}`;
     }
 
     async function loadStatuses() {
         const { data, error } = await client.from('statuses').select('*').order('id');
         if (error) { console.error(error); return; }
         statuses = data;
-        applyStatusStyles();
     }
 
     function renderMembers() {
-        const grid = document.getElementById('members-grid');
-        grid.innerHTML = members.map(m => {
-            const s = statuses.find(s => s.name === m.status) || statuses[0];
-            const emoji = s ? s.emoji : '';
-            return `
-                <div class="member-card" onclick="openModal(${m.id}, '${m.name}')">
-                    <div class="status-bar bar-${m.status}"></div>
-                    <div class="card-content">
-                        <div class="member-name">${m.name}</div>
-                        <span class="status-badge badge-${m.status}">${emoji} ${m.status}</span>
-                        <div class="updated-time">${formatTime(m.updated_at)}</div>
+        const list = document.getElementById('members-list');
+        const active = members.filter(m => !isOff(m));
+        const off = members.filter(m => isOff(m));
+
+        let html = '';
+        active.forEach(m => { html += renderRow(m, false); });
+        if (off.length > 0) {
+            html += '<div class="off-section">';
+            html += '<div class="off-section-label">休 み</div>';
+            off.forEach(m => { html += renderRow(m, true); });
+            html += '</div>';
+        }
+        list.innerHTML = html;
+    }
+
+    // 表示名マッピング（DB名→表示名、2文字+半角スペース区切り）
+    const STATUS_DISPLAY = {
+        '在社': '在 社',
+        '外出中': '外 出',
+        '外出': '外 出',
+        '休憩中': '休 憩',
+        '休憩': '休 憩',
+        '不在': '休 み',
+        '休み': '休 み',
+    };
+
+    function displayStatus(name) {
+        return STATUS_DISPLAY[name] || name;
+    }
+
+    function renderRow(m, isOffMember) {
+        const s = statuses.find(st => st.name === m.status) || statuses[0];
+        const barColor = s ? s.color : '#ccc';
+        const offClass = isOffMember ? ' is-off' : '';
+        const escapedName = m.name.replace(/'/g, "\\'");
+
+        return `
+            <div class="member-row${offClass}" style="background:${barColor}" onclick="openModal(${m.id}, '${escapedName}')">
+                <div class="row-body">
+                    <span class="row-name">${m.name}</span>
+                    <div class="row-right">
+                        <span class="row-status">${displayStatus(m.status)}</span>
+                        <span class="row-time">${formatTime(m.updated_at)}</span>
                     </div>
                 </div>
-            `;
-        }).join('');
+            </div>
+        `;
     }
 
     function formatTime(ts) {
         if (!ts) return '';
         const utcTs = ts.endsWith('Z') ? ts : ts + 'Z';
         const d = new Date(utcTs);
-        return d.toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit' }) + ' 更新';
+        return d.toLocaleTimeString('ja-JP', { timeZone: 'Asia/Tokyo', hour: '2-digit', minute: '2-digit' });
     }
+
+    let selectedMemberId = null;
 
     function openModal(id, name) {
         selectedMemberId = id;
-        document.getElementById('modal-name').textContent = `${name} の状態を変更`;
+        document.getElementById('modal-name').textContent = name + ' の状態を変更';
         const btns = document.getElementById('status-buttons');
         btns.innerHTML = statuses.map(s => `
             <button class="status-btn" style="background:${s.color}" onclick="updateStatus('${s.name}')">
-                ${s.emoji} ${s.name}
+                ${displayStatus(s.name)}
             </button>
         `).join('');
         document.getElementById('modal').classList.add('active');
@@ -465,23 +447,52 @@
         document.getElementById('admin-modal').classList.remove('active');
     }
 
+    const BASE_STATUSES = ['在社', '外出中', '外出', '休憩中', '休憩', '不在', '休み'];
+    const MAX_STATUSES = 6;
+
+    function isBaseStatus(name) {
+        return BASE_STATUSES.includes(name);
+    }
+
     function renderAdminLists() {
         document.getElementById('member-list').innerHTML = members.map(m => `
             <div class="admin-list-item">
                 <span>${m.name}</span>
-                <button class="delete-btn" onclick="deleteMember(${m.id}, '${m.name}')">削除</button>
+                <button class="delete-btn" onclick="deleteMember(${m.id}, '${m.name.replace(/'/g, "\\'")}')">削除</button>
             </div>
         `).join('');
 
-        document.getElementById('status-list').innerHTML = statuses.map(s => `
+        document.getElementById('status-list').innerHTML = statuses.map(s => {
+            const deleteBtn = isBaseStatus(s.name)
+                ? ''
+                : `<button class="delete-btn" onclick="deleteStatus(${s.id}, '${s.name.replace(/'/g, "\\'")}')">削除</button>`;
+            return `
             <div class="admin-list-item">
                 <div class="item-info">
-                    <span class="status-dot" style="background:${s.color}"></span>
-                    <span>${s.emoji} ${s.name}</span>
+                    <input type="color" value="${s.color}" style="width:24px;height:24px;border:1px solid #ddd;border-radius:4px;cursor:pointer;padding:1px;" onchange="updateStatusColor(${s.id}, this.value)">
+                    <span>${s.name}</span>
                 </div>
-                <button class="delete-btn" onclick="deleteStatus(${s.id}, '${s.name}')">削除</button>
-            </div>
-        `).join('');
+                ${deleteBtn}
+            </div>`;
+        }).join('');
+
+        // 6個上限チェック
+        const addArea = document.getElementById('status-add-area');
+        const limitMsg = document.getElementById('status-limit-msg');
+        if (statuses.length >= MAX_STATUSES) {
+            addArea.style.display = 'none';
+            limitMsg.style.display = 'block';
+        } else {
+            addArea.style.display = '';
+            limitMsg.style.display = 'none';
+        }
+    }
+
+    async function updateStatusColor(id, color) {
+        const { error } = await client.from('statuses').update({ color }).eq('id', id);
+        if (error) { alert('色の変更に失敗しました'); return; }
+        await loadStatuses();
+        renderMembers();
     }
 
     async function addMember() {
@@ -495,7 +506,7 @@
     }
 
     async function deleteMember(id, name) {
-        if (!confirm(`「${name}」を削除しますか？`)) return;
+        if (!confirm('「' + name + '」を削除しますか？')) return;
         const { error } = await client.from('members').delete().eq('id', id);
         if (error) { alert('削除に失敗しました'); return; }
         await loadMembers();
@@ -503,21 +514,19 @@
     }
 
     async function addStatus() {
+        if (statuses.length >= MAX_STATUSES) { alert('ステータスは最大6個までです'); return; }
         const name = document.getElementById('new-status-name').value.trim();
-        const emoji = document.getElementById('new-status-emoji').value.trim();
         const color = document.getElementById('new-status-color').value;
-        const bg_color = document.getElementById('new-status-bgcolor').value;
         if (!name) { alert('ステータス名を入力してください'); return; }
-        const { error } = await client.from('statuses').insert({ name, color, bg_color, emoji });
+        const { error } = await client.from('statuses').insert({ name, color, bg_color: '#f5f5f5', emoji: '' });
         if (error) { alert('追加に失敗しました'); return; }
         document.getElementById('new-status-name').value = '';
-        document.getElementById('new-status-emoji').value = '';
         await loadStatuses();
         renderAdminLists();
     }
 
     async function deleteStatus(id, name) {
-        if (!confirm(`「${name}」を削除しますか？`)) return;
+        if (!confirm('「' + name + '」を削除しますか？')) return;
         const { error } = await client.from('statuses').delete().eq('id', id);
         if (error) { alert('削除に失敗しました'); return; }
         await loadStatuses();
