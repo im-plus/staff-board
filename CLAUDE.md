@@ -41,7 +41,31 @@
 
 ---
 
-## デプロイフロー
+## デプロイ手順（AI向け：最重要）
+
+**このプロジェクトには `npm run deploy` のような専用コマンドは存在しない。`git push` するだけ。**
+
+ビルドプロセスなし・`package.json` なし・`vercel.json` なしの純粋な静的サイト。デプロイは以下の3コマンドのみ：
+
+```bash
+git add .
+git commit -m "変更内容を記述"
+git push origin main
+```
+
+→ push 後 **1〜2分で Vercel が自動デプロイ**し、https://staff-board-pearl.vercel.app に反映される。
+
+### ローカル確認
+
+dev server 不要。`index.html` または `equipment.html` を**ブラウザで直接開く**だけで動作確認可能（Supabase に接続する Vanilla JS のため）。
+
+### push 時の認証
+
+HTTPS 経由で push する。初回は GitHub の **Personal Access Token (PAT)** を要求される（パスワードではない）。一度入力すれば Windows 資格情報マネージャーにキャッシュされる。新しい PC でセットアップする場合は別途 PAT を準備すること。
+
+---
+
+## デプロイフロー（補足・歴史的経緯）
 
 **`main` ブランチに push → Vercel が自動検知してデプロイ（1-2分）**
 
