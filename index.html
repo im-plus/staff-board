@@ -581,7 +581,11 @@ const SUPABASE_KEY = 'sb_publishable_6wwEDm9e6BI4wIp3Qw2bQA_qRQHkLI_';
     }
 
     init();
-    setInterval(loadMembers, 30000);
+    // 5秒ごとに最新データを取得（Realtimeが効かない場合の保険）
+    setInterval(async () => {
+        await loadStatuses();
+        await loadMembers();
+    }, 5000);
 </script>
 </body>
 </html>

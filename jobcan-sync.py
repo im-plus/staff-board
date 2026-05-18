@@ -36,8 +36,8 @@ STAFF_MAP = {
     3:  {"board_id": 5, "name": "岡村"},
     4:  {"board_id": 6, "name": "太田"},
     12: {"board_id": 7, "name": "五藤"},
-    13: {"board_id": 8, "name": "今井"},
-    14: {"board_id": 9, "name": "加藤"},
+    13: {"board_id": 10, "name": "今井"},
+    14: {"board_id": 11, "name": "加藤"},
 }
 
 # ===== ログ設定 =====
