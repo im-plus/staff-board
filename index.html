@@ -338,7 +338,18 @@ const SUPABASE_KEY = 'sb_publishable_6wwEDm9e6BI4wIp3Qw2bQA_qRQHkLI_';
 
     const OFF_STATUS = '休み';
 
-    function isOff(member) { return member.status === OFF_STATUS; }
+    // 旧ステータス名 → 新ステータス名の正規化
+    const STATUS_NORMALIZE = {
+        '外出中': '外出',
+        '休憩中': '休憩',
+        '不在': '休み',
+    };
+
+    function normalizeStatus(name) {
+        return STATUS_NORMALIZE[name] || name;
+    }
+
+    function isOff(member) { return normalizeStatus(member.status) === OFF_STATUS; }
 
     function setColumns(n) {
         columnMode = n;
@@ -401,7 +412,10 @@ const SUPABASE_KEY = 'sb_publishable_6wwEDm9e6BI4wIp3Qw2bQA_qRQHkLI_';
     }
 
     function renderRow(m, isOffMember) {
-        const s = statuses.find(st => st.name === m.status) || statuses[0];
+        const normName = normalizeStatus(m.status);
+        const s = statuses.find(st => st.name === normName)
+               || statuses.find(st => st.name === m.status)
+               || statuses[0];
         const barColor = s ? s.color : '#ccc';
         const offClass = isOffMember ? ' is-off' : '';
         const escapedName = m.name.replace(/'/g, "\\'");
