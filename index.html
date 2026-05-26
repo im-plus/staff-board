@@ -53,7 +53,8 @@
 
         .member-list { display: flex; flex-direction: column; gap: 8px; }
         .member-list.two-col { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        .member-list.two-col .off-section { grid-column: 1 / -1; }
+        .member-list.two-col .off-section,
+        .member-list.two-col .trip-section { grid-column: 1 / -1; }
         @media (max-width: 520px) {
             .member-list.two-col { grid-template-columns: 1fr; }
         }
@@ -131,6 +132,46 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
+        }
+
+        /* --- 出張セクション --- */
+        .trip-section {
+            background: #E8EAF3;
+            border-radius: 14px;
+            padding: 16px 20px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .trip-section-label {
+            font-size: 20px;
+            font-weight: 600;
+            color: #5A6588;
+            letter-spacing: 4px;
+            text-align: center;
+            padding-bottom: 8px;
+        }
+
+        /* 出張バーは黒文字 */
+        .trip-section .member-row .row-name { color: #333; }
+        .trip-section .member-row .row-status { color: #666; }
+        .trip-section .member-row .row-time { color: #999; }
+
+        /* 2列モード時、出張セクション内のバーも2列に */
+        .member-list.two-col .trip-section {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .member-list.two-col .trip-section-label {
+            grid-column: 1 / -1;
+        }
+        @media (max-width: 520px) {
+            .member-list.two-col .trip-section {
+                grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: column;
+            }
         }
 
         /* 2列モード時、不在セクション内のバーも2列に */
@@ -337,6 +378,7 @@ const SUPABASE_KEY = 'sb_publishable_6wwEDm9e6BI4wIp3Qw2bQA_qRQHkLI_';
     let columnMode = 1;
 
     const OFF_STATUS = '休み';
+    const TRIP_STATUS = '出張';
 
     // 旧ステータス名 → 新ステータス名の正規化
     const STATUS_NORMALIZE = {
@@ -350,6 +392,7 @@ const SUPABASE_KEY = 'sb_publishable_6wwEDm9e6BI4wIp3Qw2bQA_qRQHkLI_';
     }
 
     function isOff(member) { return normalizeStatus(member.status) === OFF_STATUS; }
+    function isTrip(member) { return normalizeStatus(member.status) === TRIP_STATUS; }
 
     function setColumns(n) {
         columnMode = n;
@@ -382,11 +425,20 @@ const SUPABASE_KEY = 'sb_publishable_6wwEDm9e6BI4wIp3Qw2bQA_qRQHkLI_';
 
     function renderMembers() {
         const list = document.getElementById('members-list');
-        const active = members.filter(m => !isOff(m));
+        const active = members.filter(m => !isOff(m) && !isTrip(m));
+        const trip = members.filter(m => isTrip(m));
         const off = members.filter(m => isOff(m));
 
         let html = '';
         active.forEach(m => { html += renderRow(m, false); });
+
+        if (trip.length > 0) {
+            html += '<div class="trip-section">';
+            html += '<div class="trip-section-label">出 張</div>';
+            trip.forEach(m => { html += renderRow(m, false); });
+            html += '</div>';
+        }
+
         if (off.length > 0) {
             html += '<div class="off-section">';
             html += '<div class="off-section-label">休 み</div>';
@@ -403,6 +455,7 @@ const SUPABASE_KEY = 'sb_publishable_6wwEDm9e6BI4wIp3Qw2bQA_qRQHkLI_';
         '外出': '外 出',
         '休憩中': '休 憩',
         '休憩': '休 憩',
+        '出張': '出 張',
         '不在': '休 み',
         '休み': '休 み',
     };
@@ -478,7 +531,7 @@ const SUPABASE_KEY = 'sb_publishable_6wwEDm9e6BI4wIp3Qw2bQA_qRQHkLI_';
         document.getElementById('admin-modal').classList.remove('active');
     }
 
-    const BASE_STATUSES = ['在社', '外出中', '外出', '休憩中', '休憩', '不在', '休み'];
+    const BASE_STATUSES = ['在社', '外出中', '外出', '休憩中', '休憩', '出張', '不在', '休み'];
     const MAX_STATUSES = 6;
 
     function isBaseStatus(name) {
